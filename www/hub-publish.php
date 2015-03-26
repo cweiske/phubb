@@ -6,9 +6,11 @@
  *
  * @link https://github.com/pubsubhubbub/PubSubHubbub/issues/33
  */
+namespace phubb;
 header('HTTP/1.0 500 Internal Server Error');
 
 require_once __DIR__ . '/../src/phubb/functions.php';
+$db = require __DIR__ . '/../src/phubb/db.php';
 
 if (!isset($_POST['hub_mode'])) {
     header('HTTP/1.0 400 Bad Request');
@@ -34,13 +36,11 @@ if (!isValidUrl($_POST['hub_url'])) {
 $hubUrl = $_POST['hub_url'];
 
 //TODO: what about duplicates?
-$db = new PDO('mysql:dbname=phubb;host=127.0.0.1', 'phubb', 'phubb');
-$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $db->prepare('INSERT INTO pings (p_created, p_url) VALUES(NOW(), :url)')
     ->execute(array(':url' => $hubUrl));
 
 //handle task in background
-$gmclient= new GearmanClient();
+$gmclient= new \GearmanClient();
 $gmclient->addServer();
 $gmclient->doBackground('phubb_publish', $hubUrl);
 if ($gmclient->returnCode() != GEARMAN_SUCCESS) {

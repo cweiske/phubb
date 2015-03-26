@@ -69,7 +69,7 @@ if (isset($_POST['hub_secret'])) {
     }
     $hubSecret = $_POST['hub_secret'];
 } else {
-    $hubSecret = null;
+    $hubSecret = '';
 }
 $req = new Model_SubscriptionRequest();
 $req->callback     = $hubCallback;
@@ -78,7 +78,6 @@ $req->mode         = $hubMode;
 $req->leaseSeconds = $hubLeaseSeconds;
 $req->secret       = $hubSecret;
 
-storeSubscriptionRequest($req);
 initiateVerification($req);
 
 header('HTTP/1.0 202 Accepted');
@@ -95,27 +94,6 @@ function initiateVerification(Model_SubscriptionRequest $req)
         echo "Error sending verification job\n";
         exit(1);
     }
-}
-
-
-function storeSubscriptionRequest(Model_SubscriptionRequest $req)
-{
-    //FIXME: handle duplicate subscription requests?
-    $db = require __DIR__ . '/../src/phubb/db.php';
-    $db->prepare(
-        'INSERT INTO requests'
-        . '(req_created, req_callback, req_topic, req_mode, req_lease_seconds'
-        . ', req_secret, req_validated)'
-        . ' VALUES(NOW(), :callback, :topic, :mode, :leaseSeconds, :secret, 1)'
-    )->execute(
-        array(
-            ':callback' => $req->callback,
-            ':topic' => $req->topic,
-            ':mode' => $req->mode,
-            ':leaseSeconds' => $req->leaseSeconds,
-            ':secret' => $req->secret
-        )
-    );
 }
 
 function isValidTopic($url)
