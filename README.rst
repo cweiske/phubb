@@ -5,6 +5,29 @@ phubb - PHP PubSubHubbub server
 Work in progress.
 
 
+Dependencies
+============
+* PHP
+* PDO
+* PHP Gearman extension
+* Gearman job server, ``gearman-job-server``
+
+
+
+Testing
+=======
+Verify a subscription::
+
+  $ ./bin/test-task.php verify http://phubb.bogo/client-callback.php http://www.bogo/tagebuch/feed/ subscribe 3600 mysecret
+
+Publish an update::
+
+  $ ./bin/test-task.php publish http://www.bogo/tagebuch/feed/
+
+Notify subscriber::
+
+  $ ./bin/test-task.php notifysubscriber http://www.bogo/tagebuch/feed/ 1 55140a8d865a9
+
 
 References
 ==========

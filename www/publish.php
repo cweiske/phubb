@@ -1,15 +1,13 @@
 <?php
+/**
+ * Publish an update to the hub
+ */
 $hub      = 'http://phubb.bogo/hub.php';
-$callback = 'http://phubb.bogo/client-callback.php';
 $topic    = 'http://www.bogo/tagebuch/feed/';
-$secret   = 'mysecret';//TODO: make random
 
 $params = array(
-    'hub.callback'      => $callback,
-    'hub.mode'          => 'subscribe',
-    'hub.topic'         => $topic,
-    'hub.lease_seconds' => 3600,
-    'hub.secret'        => $secret,
+    'hub.mode' => 'publish',
+    'hub.url'  => $topic,
 );
 $enc = array();
 foreach ($params as $key => $val) {
@@ -32,12 +30,12 @@ $ctx = stream_context_create(
 
 $res = file_get_contents($hub, false, $ctx);
 list($http, $code, $rest) = explode(' ', $http_response_header[0]);
-if (intval($code) === 202) {
-    echo "all fine\n";
+if (intval($code / 100) === 2) {
+    echo "all fine: " . rtrim($res) . "\n";
     exit();
 }
 
-echo "Error: HTTP status 202 expected; got $code\n";
+echo "Error: HTTP status was not 2xx; got $code\n";
 var_dump(
     $http_response_header,
     $res

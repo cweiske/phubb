@@ -1,5 +1,9 @@
 <?php
+namespace phubb;
 header('HTTP/1.0 500 Internal Server Error');
+
+require_once __DIR__ . '/../src/phubb/functions.php';
+
 $defaultLeaseSeconds = 86400;
 //PHP converts dots to underscore, so hub.mode becomes hub_mode
 if (!isset($_POST['hub_callback'])) {
@@ -67,23 +71,37 @@ if (isset($_POST['hub_secret'])) {
 } else {
     $hubSecret = null;
 }
+$req = new Model_SubscriptionRequest();
+$req->callback     = $hubCallback;
+$req->topic        = $hubTopic;
+$req->mode         = $hubMode;
+$req->leaseSeconds = $hubLeaseSeconds;
+$req->secret       = $hubSecret;
 
-storeSubscriptionRequest(
-    $hubCallback,
-    $hubTopic,
-    $hubMode,
-    $hubLeaseSeconds,
-    $hubSecret
-);
+storeSubscriptionRequest($req);
+initiateVerification($req);
+
 header('HTTP/1.0 202 Accepted');
 exit();
 
 
-function storeSubscriptionRequest($callback, $topic, $mode, $leaseSeconds, $secret)
+function initiateVerification(Model_SubscriptionRequest $req)
+{
+    $gmclient= new \GearmanClient();
+    $gmclient->addServer();
+    $gmclient->doBackground('phubb_verify', serialize($req));
+    if ($gmclient->returnCode() != GEARMAN_SUCCESS) {
+        header('HTTP/1.0 500 Internal Server Error');
+        echo "Error sending verification job\n";
+        exit(1);
+    }
+}
+
+
+function storeSubscriptionRequest(Model_SubscriptionRequest $req)
 {
     //FIXME: handle duplicate subscription requests?
-    $db = new PDO('mysql:dbname=phubb;host=127.0.0.1', 'phubb', 'phubb');
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db = require __DIR__ . '/../src/phubb/db.php';
     $db->prepare(
         'INSERT INTO requests'
         . '(req_created, req_callback, req_topic, req_mode, req_lease_seconds'
@@ -91,11 +109,11 @@ function storeSubscriptionRequest($callback, $topic, $mode, $leaseSeconds, $secr
         . ' VALUES(NOW(), :callback, :topic, :mode, :leaseSeconds, :secret, 1)'
     )->execute(
         array(
-            ':callback' => $callback,
-            ':topic' => $topic,
-            ':mode' => $mode,
-            ':leaseSeconds' => $leaseSeconds,
-            ':secret' => $secret
+            ':callback' => $req->callback,
+            ':topic' => $req->topic,
+            ':mode' => $req->mode,
+            ':leaseSeconds' => $req->leaseSeconds,
+            ':secret' => $req->secret
         )
     );
 }
@@ -104,18 +122,5 @@ function isValidTopic($url)
 {
     //TODO: implement URL filtering
     return true;
-}
-
-function isValidUrl($url)
-{
-    if (filter_var($url, FILTER_VALIDATE_URL) === false) {
-        return false;
-    }
-    if (substr($url, 0, 7) == 'http://'
-        || substr($url, 0, 8) == 'https://'
-    ) {
-        return true;
-    }
-    return false;
 }
 ?>
