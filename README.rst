@@ -3,6 +3,7 @@ phubb - PHP PubSubHubbub server
 *******************************
 
 Work in progress.
+Works basically.
 
 
 Dependencies
@@ -16,7 +17,9 @@ Dependencies
 Installation
 ============
 #. Point the web server's document root to the ``www/`` directory.
-#. Create a new MySQL database and import the schema from ``data/schema.sql``
+#. Create a new MySQL database and import the schema from ``data/schema.sql``.
+   Database host and username/password/db name are currently harcoded to
+   ``127.0.0.1`` and ``pubb``.
 #. Run the worker process ``bin/worker.php``
 
 
