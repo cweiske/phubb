@@ -13,6 +13,12 @@ Dependencies
 * Gearman job server, ``gearman-job-server``
 
 
+Installation
+============
+#. Point the web server's document root to the ``www/`` directory.
+#. Create a new MySQL database and import the schema from ``data/schema.sql``
+#. Run the worker process ``bin/worker.php``
+
 
 Testing
 =======
