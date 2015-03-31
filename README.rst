@@ -2,8 +2,9 @@
 phubb - PHP PubSubHubbub server
 *******************************
 
-Work in progress.
-Works basically.
+Work in progress. Basic functionality is working.
+
+Implements PubSubHubbub 0.4.
 
 
 Dependencies
@@ -65,4 +66,7 @@ TODO
 - Re-ping if ping was unsuccessful for a subscriber
 - stats
 - require domain registration before being able to publish
+
+  - check if URL topic URL has hub link (and self link)
 - do not allow subscriptions for urls that are not registered
+- logging
