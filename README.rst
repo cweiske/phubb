@@ -22,9 +22,26 @@ Installation
    ``127.0.0.1`` and ``pubb``.
 #. Run the worker process ``bin/worker.php``
 
+The hub URL is at ``http://$domain/hub.php``.
+
+
+Notifying the hub about an update
+=================================
+
+Send a POST request with the following data::
+
+    hub.mode=publish
+    hub.url=http://topic-url.example.org/
+
+Example::
+    $ curl -d hub.mode=publish -d "hub.url=http://blog.example.org/feed"\
+        http://phubb.example.org/hub.php
+
 
 Testing
 =======
+Tasks can be sent via the ``test-task.php`` script to the worker.
+
 Verify a subscription::
 
   $ ./bin/test-task.php verify http://phubb.bogo/client-callback.php http://www.bogo/tagebuch/feed/ subscribe 3600 mysecret
@@ -41,3 +58,12 @@ Notify subscriber::
 References
 ==========
 * https://pubsubhubbub.googlecode.com/git/pubsubhubbub-core-0.4.html
+
+
+TODO
+====
+- Clean up temp data after all pings are done
+- Re-ping if ping was unsuccessful for a subscriber
+- stats
+- require domain registration before being able to publish
+- do not allow subscriptions for urls that are not registered
