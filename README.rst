@@ -62,7 +62,6 @@ References
 
 TODO
 ====
-- Clean up temp data after all pings are done
 - Re-ping if ping was unsuccessful for a subscriber
 - stats
 - require domain registration before being able to publish

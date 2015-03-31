@@ -16,18 +16,22 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `pings`
+-- Table structure for table `pingrequests`
 --
 
-DROP TABLE IF EXISTS `pings`;
+DROP TABLE IF EXISTS `pingrequests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `pings` (
-  `p_id` int(11) NOT NULL AUTO_INCREMENT,
-  `p_created` datetime NOT NULL,
-  `p_url` varchar(8192) NOT NULL,
-  PRIMARY KEY (`p_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8;
+CREATE TABLE `pingrequests` (
+  `pr_id` int(11) NOT NULL AUTO_INCREMENT,
+  `pr_created` datetime NOT NULL,
+  `pr_updated` datetime NOT NULL,
+  `pr_url` varchar(8192) NOT NULL,
+  `pr_subscribers` int(11) NOT NULL,
+  `pr_ping_ok` int(11) NOT NULL,
+  `pr_ping_errors` int(11) NOT NULL,
+  PRIMARY KEY (`pr_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,9 +50,11 @@ CREATE TABLE `subscriptions` (
   `sub_lease_seconds` int(11) NOT NULL,
   `sub_lease_end` datetime NOT NULL,
   `sub_secret` varchar(512) NOT NULL,
+  `sub_ping_ok` int(11) NOT NULL,
+  `sub_ping_error` int(11) NOT NULL,
   PRIMARY KEY (`sub_id`),
   UNIQUE KEY `req_id` (`sub_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='Subscription requests';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Subscription requests';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -65,7 +71,7 @@ CREATE TABLE `topics` (
   `t_change_date` datetime NOT NULL,
   `t_content_md5` varchar(32) NOT NULL,
   PRIMARY KEY (`t_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -77,4 +83,4 @@ CREATE TABLE `topics` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-03-30 17:13:24
+-- Dump completed on 2015-04-01  0:40:59

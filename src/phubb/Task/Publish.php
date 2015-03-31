@@ -5,6 +5,12 @@ class Task_Publish
 {
     protected $db;
 
+    /**
+     * ID of the stored ping request in the database
+     * @var integer
+     */
+    protected $nRequestId;
+
     public function __construct(\PDO $db)
     {
         $this->db = $db;
@@ -31,24 +37,75 @@ class Task_Publish
      */
     public function run($url)
     {
+        $this->nRequestId = $this->storeRequest($url);
+
         list($headers, $content) = $this->checkTopicUpdate($url);
         if ($content === false) {
             return false;
         }
 
         $count = $this->notifySubscribers($url, $headers, $content);
+        $this->updateRequestCount($count);
         return $count;
     }
 
-    function notifySubscribers($url, $headers, $content)
+    /**
+     * Store the ping request in the database for status tracking.
+     *
+     * @param string $url Topic URL that was updated
+     *
+     * @return integer ID of the stored request
+     */
+    protected function storeRequest($url)
     {
-        $id = uniqid();
-        $fileHeaders = __DIR__ . '/../../../tmp/ping-' . $id . '-headers';
-        $fileContent = __DIR__ . '/../../../tmp/ping-' . $id . '-content';
+        //TODO: what about duplicates?
+        $this->db->prepare(
+            'INSERT INTO pingrequests'
+            . ' (pr_created, pr_updated, pr_url)'
+            . ' VALUES(NOW(), NOW(), :url)'
+        )->execute(array(':url' => $url));
+
+        return $this->db->lastInsertId();
+    }
+
+    /**
+     * Set the subscriber count of the current ping request
+     *
+     * @param integer $count Number of subscribers
+     *
+     * @return void
+     */
+    protected function updateRequestCount($count)
+    {
+        $this->db->prepare(
+            'UPDATE pingrequests'
+            . ' SET pr_subscribers = :count'
+            . ', pr_updated = NOW()'
+            . ' WHERE pr_id = :id'
+        )->execute(array(':count' => $count, ':id' => $this->nRequestId));
+    }
+
+    /**
+     * Initiate the worker jobs that notify the subscribers about
+     * the topic update
+     *
+     * @param string $url     Topic URL
+     * @param array  $headers Array of HTTP headers from fetching the URL
+     * @param string $content Content
+     *
+     * @return integer Number of worker jobs that have been created
+     *                 (Thus the number of subscribers)
+     */
+    protected function notifySubscribers($url, $headers, $content)
+    {
+        list($fileHeaders, $fileContent) = Helper::getTmpFilePaths(
+            $this->nRequestId
+        );
+
         $headers = $this->filterHeaders($headers);
         file_put_contents($fileHeaders, serialize($headers));
         file_put_contents($fileContent, $content);
-        
+
         $gmclient= new \GearmanClient();
         $gmclient->addServer();
 
@@ -64,18 +121,25 @@ class Task_Publish
                     array(
                         'topicUrl' => $url,
                         'subscriptionId' => $rowSubscription->sub_id,
-                        'fileId' => $id,
+                        'pingRequestId' => $this->nRequestId,
                     )
                 )
             );
             if ($gmclient->returnCode() != GEARMAN_SUCCESS) {
-                echo "bad return code\n";            
+                echo "bad return code\n";
             }
             ++$count;
         }
         return $count;
     }
 
+    /**
+     * Filter an array with HTTP headers so that it can be sent to a subscriber.
+     *
+     * @param array $headers Array of HTTP header strings
+     *
+     * @return array Filtered array of HTTP headers
+     */
     protected function filterHeaders($headers)
     {
         $headersToSend  = array();
@@ -151,7 +215,7 @@ class Task_Publish
                 . '(t_url, t_change_date, t_content_md5)'
                 . ' VALUES(:url, "1970-01-01 00:00:00", "")'
             )->execute(array(':url' => $url));
-            
+
             $stmt = $this->db->prepare('SELECT * FROM topics WHERE t_url = :url');
             $stmt->execute(array(':url' => $url));
             $rowTopic = $stmt->fetch();

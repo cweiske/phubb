@@ -11,6 +11,7 @@ $arTasks = array(
     'publish' => new Task_Publish($db),
     'notifysubscriber' => new Task_NotifySubscriber($db),
     'verify' => new Task_Verify($db),
+    'cleanup_pingrequest' => new Task_CleanupPingRequest($db),
 );
 $taskname = array_shift($params);
 if (!isset($arTasks[$taskname])) {

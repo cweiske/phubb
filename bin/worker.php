@@ -7,6 +7,11 @@ $db = require __DIR__ . '/../src/phubb/db.php';
 $gmworker= new \GearmanWorker();
 $gmworker->addServer();
 
+$taskCleanupPingRequest = new Task_CleanupPingRequest($db);
+$gmworker->addFunction(
+    'phubb_cleanup_pingrequest', array($taskCleanupPingRequest, 'runJob')
+);
+
 $taskPublish = new Task_Publish($db);
 $gmworker->addFunction('phubb_publish', array($taskPublish, 'runJob'));
 

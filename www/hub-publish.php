@@ -35,9 +35,7 @@ if (!isValidUrl($_POST['hub_url'])) {
 }
 $hubUrl = $_POST['hub_url'];
 
-//TODO: what about duplicates?
-$db->prepare('INSERT INTO pings (p_created, p_url) VALUES(NOW(), :url)')
-    ->execute(array(':url' => $hubUrl));
+//TODO: log request
 
 //handle task in background
 $gmclient= new \GearmanClient();
