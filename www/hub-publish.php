@@ -39,7 +39,7 @@ $hubUrl = $_POST['hub_url'];
 
 //handle task in background
 $gmclient= new \GearmanClient();
-$gmclient->addServer();
+$gmclient->addServer('127.0.0.1');
 $gmclient->doBackground('phubb_publish', $hubUrl);
 if ($gmclient->returnCode() != GEARMAN_SUCCESS) {
     header('HTTP/1.0 500 Internal Server Error');

@@ -5,7 +5,7 @@ require_once __DIR__ . '/../src/phubb/functions.php';
 $db = require __DIR__ . '/../src/phubb/db.php';
 
 $gmworker= new \GearmanWorker();
-$gmworker->addServer();
+$gmworker->addServer('127.0.0.1');
 
 $taskCleanupPingRequest = new Task_CleanupPingRequest($db);
 $gmworker->addFunction(

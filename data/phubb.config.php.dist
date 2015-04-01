@@ -1,0 +1,6 @@
+<?php
+$dbHost = '127.0.0.1';
+$dbName = 'phubb';
+$dbUser = 'phubb';
+$dbPass = 'phubb';
+?>

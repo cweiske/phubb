@@ -107,7 +107,7 @@ class Task_Publish
         file_put_contents($fileContent, $content);
 
         $gmclient= new \GearmanClient();
-        $gmclient->addServer();
+        $gmclient->addServer('127.0.0.1');
 
         $stmt = $this->db->prepare(
             'SELECT * FROM subscriptions WHERE sub_topic = :topic'

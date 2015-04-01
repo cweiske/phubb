@@ -126,7 +126,7 @@ class Task_NotifySubscriber
         }
 
         $gmclient= new \GearmanClient();
-        $gmclient->addServer();
+        $gmclient->addServer('127.0.0.1');
         $gmclient->doBackground('phubb_cleanup_pingrequest', $pingRequestId);
     }
 }
