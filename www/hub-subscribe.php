@@ -47,7 +47,7 @@ if ($_POST['hub_mode'] != 'subscribe' && $_POST['hub_mode'] != 'unsubscribe') {
 }
 $hubMode = $_POST['hub_mode'];
 
-if (isset($_POST['hub_lease_seconds'])) {
+if (isset($_POST['hub_lease_seconds']) && $_POST['hub_lease_seconds'] != '') {
     if (!is_numeric($_POST['hub_lease_seconds'])) {
         header('HTTP/1.0 400 Bad Request');
         echo "Invalid parameter value for hub.lease_seconds\n";
