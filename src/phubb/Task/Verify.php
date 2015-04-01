@@ -50,7 +50,7 @@ class Task_Verify
     {
         $challenge = mt_rand();
         $url = $req->callback;
-        $sep = strpos($url, '?') === false ? '?' : ':';
+        $sep = strpos($url, '?') === false ? '?' : '&';
         $url .= $sep . 'hub.mode=' . urlencode($req->mode)
             . '&hub.topic=' . urlencode($req->topic)
             . '&hub.challenge=' . urlencode($challenge)
