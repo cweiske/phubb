@@ -44,7 +44,7 @@ class Task_Verify
      *
      * @param string $url Topic URL that was updated
      *
-     * @return FIXME
+     * @return boolean True if all went well, false if not
      */
     public function runRequest(Model_SubscriptionRequest $req)
     {
@@ -82,7 +82,7 @@ class Task_Verify
 
     function failSubscription($reason)
     {
-        echo "fail: $reason\n";return;
+        echo "fail: $reason\n";
     }
 
     function acceptSubscription(Model_SubscriptionRequest $req)

@@ -22,6 +22,7 @@ Installation
    Database host and username/password/db name are currently harcoded to
    ``127.0.0.1`` and ``pubb``.
 #. Run the worker process ``bin/worker.php``
+#. Let ``bin/phubb-cron.php`` be run by cron every minute.
 
 The hub URL is at ``http://$domain/hub.php``.
 
@@ -65,6 +66,7 @@ TODO
 ====
 - Re-ping if ping was unsuccessful for a subscriber
 - stats
+- only re-ping if something changed
 - require domain registration before being able to publish
 
   - check if URL topic URL has hub link (and self link)

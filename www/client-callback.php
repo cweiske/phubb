@@ -7,9 +7,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         echo $_GET['hub_challenge'];
         exit();
     }
+    echo "Huh? I did not get a hub.challenge parameter.\n";
 } else {
     //POST
     //notification that a topic URL was updated
+    if (isset($_GET['failcode']) && is_numeric($_GET['failcode'])) {
+        header('HTTP/1.0 ' . intval($_GET['failcode']) . ' Fail..');
+        echo "I am failing, I am failing, through the dark net, across the bits\n";
+        exit(1);
+    }
     //FIXME: parse hub + topic URL
     //FIXME: check secret
     $secret = 'mysecret';
