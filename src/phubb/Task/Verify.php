@@ -97,6 +97,11 @@ class Task_Verify
                     ':topic'    => $req->topic
                 )
             );
+            $this->db->prepare(
+                'UPDATE topics SET t_subscriber = t_subscriber - 1'
+                . ',t_updated = NOW()'
+                . ' WHERE t_url = :topic'
+            )->execute(array(':topic' => $req->topic));
             return;
         }
     
@@ -130,6 +135,11 @@ class Task_Verify
                     )
                 )
             );
+            $this->db->prepare(
+                'UPDATE topics SET t_subscriber = t_subscriber + 1'
+                . ',t_updated = NOW()'
+                . ' WHERE t_url = :topic'
+            )->execute(array(':topic' => $req->topic));
             return;
         }
 

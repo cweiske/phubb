@@ -90,6 +90,7 @@ CREATE TABLE `topics` (
   `t_id` int(11) NOT NULL AUTO_INCREMENT,
   `t_updated` datetime NOT NULL,
   `t_url` varchar(8192) NOT NULL,
+  `t_subscriber` int(11) NOT NULL,
   `t_change_date` datetime NOT NULL,
   `t_content_md5` varchar(32) NOT NULL,
   PRIMARY KEY (`t_id`)
@@ -105,4 +106,4 @@ CREATE TABLE `topics` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-04-08  7:27:26
+-- Dump completed on 2015-04-08  7:47:19
