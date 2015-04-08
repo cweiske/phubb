@@ -1,6 +1,9 @@
 <?php
 namespace phubb;
 
+/**
+ * Notify all subscribers that a topic URL changed
+ */
 class Task_Publish
 {
     protected $db;
@@ -111,6 +114,7 @@ class Task_Publish
 
         $stmt = $this->db->prepare(
             'SELECT * FROM subscriptions WHERE sub_topic = :topic'
+            . ' AND sub_lease_end >= NOW()'
         );
         $stmt->execute(array(':topic' => $url));
         $count = 0;

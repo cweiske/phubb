@@ -14,6 +14,7 @@ What works / Features
 - Sending notifications to subscribers
 
   - As many worker-processes as you want to speed it up
+  - Notifications get only sent when lease time is >= NOW()
 - Re-pinging a subscriber when it failed (exponential back-off)
 
 
@@ -76,7 +77,6 @@ TODO
 ====
 - logging
 - only re-ping if the content changed
-- let cron remove subscriptions if the lease time is over
 - stats
 - require domain registration before being able to publish
 
