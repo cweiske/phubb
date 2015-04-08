@@ -7,6 +7,16 @@ Work in progress. Basic functionality is working.
 Implements PubSubHubbub 0.4.
 
 
+What works / Features
+=====================
+- Subscribing to a topic
+- Notifying the hub about a topic update
+- Sending notifications to subscribers
+
+  - As many worker-processes as you want to speed it up
+- Re-pinging a subscriber when it failed (exponential back-off)
+
+
 Dependencies
 ============
 * PHP
@@ -64,11 +74,13 @@ References
 
 TODO
 ====
-- Re-ping if ping was unsuccessful for a subscriber
+- logging
+- only re-ping if the content changed
+- let cron remove subscriptions if the lease time is over
 - stats
-- only re-ping if something changed
 - require domain registration before being able to publish
 
   - check if URL topic URL has hub link (and self link)
 - do not allow subscriptions for urls that are not registered
-- logging
+- maybe: give phubb a base url, and it figures out by itself what actually
+  changed
