@@ -42,13 +42,18 @@ class Task_Publish
     {
         $this->nRequestId = $this->storeRequest($url);
 
-        list($headers, $content) = $this->checkTopicUpdate($url);
+        list($rowTopic, $headers, $content) = $this->checkTopicUpdate($url);
         if ($content === false) {
+            //an error occured fetching the data
+            return false;
+        } else if ($content === true) {
+            //content did not change; no need to send notifications
             return false;
         }
 
         $count = $this->notifySubscribers($url, $headers, $content);
         $this->updateRequestCount($count);
+        $this->updateTopicStatus($rowTopic->t_id, $headers, $content);
         return $count;
     }
 
@@ -149,8 +154,9 @@ class Task_Publish
         $headersToSend  = array();
         $allowedHeaders = array_flip(
             array(
-                'content-length',
-                'content-type',
+                //content headers are set by POST already
+                //'content-length',
+                //'content-type',
                 'etag',
                 'last-modified',
                 'link',
@@ -158,52 +164,91 @@ class Task_Publish
             )
         );
 
-        //drop "HTTP/1.0 ..."
-        array_shift($headers);
-
-        foreach ($headers as $header) {
-            list($name, $value) = explode(':', $header, 2);
-            $name = strtolower($name);
+        foreach ($this->parseHeaders($headers) as $name => $value) {
             if (isset($allowedHeaders[$name])) {
-                $headersToSend[] = $header;
+                $headersToSend[] = $name . ': ' . $value;
             }
         }
         return $headersToSend;
+    }
+
+    protected function parseHeaders($arHeaderLines)
+    {
+        if (substr($arHeaderLines[0], 0, 5) == 'HTTP/') {
+            //drop "HTTP/1.0 ..."
+            array_shift($arHeaderLines);
+        }
+
+        $arHeaders = array();
+        foreach ($arHeaderLines as $header) {
+            list($name, $value) = explode(':', $header, 2);
+            $name = strtolower($name);
+            $arHeaders[$name] = trim($value);
+        }
+        return $arHeaders;
     }
 
     function checkTopicUpdate($url)
     {
         $rowTopic = $this->fetchOrCreateTopicRow($url);
         list($headers, $content) = $this->fetchTopic($rowTopic);
+
         if ($content === false) {
             //TODO: try again later
-            return;
+            return array($rowTopic, false, false);
+        } else if ($content === true) {
+            //content did not change
+            //TODO: logging
+            return array($rowTopic, true, true);
         }
 
         //TODO: extract "self" url
         //TODO: check if modified
-        return array($headers, $content);
+        return array($rowTopic, $headers, $content);
     }
 
+    /**
+     * Fetch a topic URL
+     *
+     * @return array key 0: HTTP response header array
+     *                      or FALSE if an error occured
+     *                      or TRUE if the content did not change
+     *               key 1: HTTP body content
+     */
     function fetchTopic($rowTopic)
     {
+        $header = array();
+        if (strtotime($rowTopic->t_change_date) != 0) {
+            $header[] = 'If-Modified-Since: '
+                . date('r', strtotime($rowTopic->t_change_date));
+        }
+        if ($rowTopic->t_etag != '') {
+            $header[] = 'If-None-Match: "' . $rowTopic->t_etag . '"';
+        }
         $ctx = stream_context_create(
             array(
                 'http' => array(
-                    'header' => array(
-                    //FIXME: if-modified-since
-                    //'Content-type: application/x-www-form-urlencoded',
-                    )
+                    'header' => $header
                 )
             )
         );
 
         $content = file_get_contents($rowTopic->t_url, false, $ctx);
         list($http, $code, $rest) = explode(' ', $http_response_header[0]);
-        if (intval($code / 100) === 2) {
-            return array($http_response_header, $content);
+        if ($code == 304) {
+            //304 Not Modified
+            return array(true, true);
+        } else if (intval($code / 100) !== 2) {
+            return array(false, false);
         }
-        return array(false, false);
+
+        $contentHash = md5($content);
+        if ($contentHash == $rowTopic->t_content_md5) {
+            //content did not change
+            return array(true, true);
+        }
+
+        return array($http_response_header, $content);
     }
 
     function fetchOrCreateTopicRow($url)
@@ -225,6 +270,38 @@ class Task_Publish
             $rowTopic = $stmt->fetch();
         }
         return $rowTopic;
+    }
+
+    protected function updateTopicStatus($topicId, $headers, $content)
+    {
+        $arHeaders = $this->parseHeaders($headers);
+
+        $lastChangeDate = '';
+        if (isset($arHeaders['last-modified'])) {
+            $lastChangeDate = gmdate(
+                'Y-m-d H:i:s', strtotime($arHeaders['last-modified'])
+            );
+        }
+        $etag = '';
+        if (isset($arHeaders['etag'])) {
+            $etag = trim($arHeaders['etag'], '"');
+        }
+
+        $this->db->prepare(
+            'UPDATE topics'
+            . ' SET t_change_date = :date'
+            . ',t_content_md5 = :md5'
+            . ',t_etag = :etag'
+            . ',t_updated = NOW()'
+            . ' WHERE t_id = :id'
+        )->execute(
+            array(
+                ':date' => $lastChangeDate,
+                ':md5'  => md5($content),
+                ':etag' => $etag,
+                ':id'   => $topicId,
+            )
+        );
     }
 }
 ?>

@@ -15,6 +15,8 @@ What works / Features
 
   - As many worker-processes as you want to speed it up
   - Notifications get only sent when lease time is >= NOW()
+  - Notifications get only sent when the content changed.
+    phubb uses etag, last modified and a hash on the content to check that.
 - Re-pinging a subscriber when it failed (exponential back-off)
 
 
@@ -76,7 +78,6 @@ References
 TODO
 ====
 - logging
-- only re-ping if the content changed
 - stats
 - require domain registration before being able to publish
 
