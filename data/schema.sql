@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 5.5.41, for debian-linux-gnu (x86_64)
 --
--- Host: localhost    Database: phubb
+-- Host: 127.0.0.1    Database: phubb
 -- ------------------------------------------------------
 -- Server version	5.5.41-0ubuntu0.14.04.1
 
@@ -93,6 +93,7 @@ CREATE TABLE `topics` (
   `t_subscriber` int(11) NOT NULL,
   `t_change_date` datetime NOT NULL,
   `t_content_md5` varchar(32) NOT NULL,
+  `t_etag` varchar(32) NOT NULL,
   PRIMARY KEY (`t_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -106,4 +107,4 @@ CREATE TABLE `topics` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-04-08  7:47:19
+-- Dump completed on 2015-04-08 21:42:58
