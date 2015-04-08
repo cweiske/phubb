@@ -29,8 +29,30 @@ CREATE TABLE `pingrequests` (
   `pr_url` varchar(8192) NOT NULL,
   `pr_subscribers` int(11) NOT NULL,
   `pr_ping_ok` int(11) NOT NULL,
-  `pr_ping_errors` int(11) NOT NULL,
+  `pr_ping_reping` int(11) NOT NULL,
+  `pr_ping_error` int(11) NOT NULL,
   PRIMARY KEY (`pr_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `repings`
+--
+
+DROP TABLE IF EXISTS `repings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `repings` (
+  `rp_id` int(11) NOT NULL AUTO_INCREMENT,
+  `rp_pr_id` int(11) NOT NULL,
+  `rp_sub_id` int(11) NOT NULL,
+  `rp_created` datetime NOT NULL,
+  `rp_updated` datetime NOT NULL,
+  `rp_iteration` int(11) NOT NULL DEFAULT '0',
+  `rp_scheduled` int(11) NOT NULL,
+  `rp_next_try` datetime NOT NULL,
+  `rp_last_error` varchar(256) NOT NULL,
+  PRIMARY KEY (`rp_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -83,4 +105,4 @@ CREATE TABLE `topics` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-04-01  0:40:59
+-- Dump completed on 2015-04-08  7:27:26
