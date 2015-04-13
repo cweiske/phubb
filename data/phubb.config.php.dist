@@ -3,4 +3,8 @@ $dbHost = '127.0.0.1';
 $dbName = 'phubb';
 $dbUser = 'phubb';
 $dbPass = 'phubb';
+
+//debug, info, notice, warning, error
+$logLevel = 'debug';
+$logFile = '/var/log/phubb.log';
 ?>

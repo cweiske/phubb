@@ -7,10 +7,13 @@ class Logger extends \Psr\Log\AbstractLogger
 
     public function __construct()
     {
+        require __DIR__ . '/../../data/phubb.config.php';
+
+
         $this->ml = new \Monolog\Logger('phubb');
         $this->ml->pushHandler(
             new \Monolog\Handler\StreamHandler(
-                __DIR__ . '/../../phubb.log', \Monolog\Logger::DEBUG
+                $logFile, \Monolog\Logger::toMonologLevel($logLevel)
             )
         );
     }
