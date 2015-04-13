@@ -28,6 +28,7 @@ Dependencies
 * PDO
 * PHP Gearman extension
 * Gearman job server, ``gearman-job-server``
+* Monolog
 
 
 Installation
@@ -36,6 +37,10 @@ Installation
 #. Create a new MySQL database and import the schema from ``data/schema.sql``.
    Database host and username/password/db name are currently harcoded to
    ``127.0.0.1`` and ``pubb``.
+#. Install dependencies::
+
+     $ composer install
+
 #. Run the worker process ``bin/worker.php``
 #. Let ``bin/phubb-cron.php`` be run by cron every minute.
 
