@@ -41,7 +41,7 @@ Installation
 
      $ composer install
 
-#. Run the worker process ``bin/worker.php``
+#. Run the worker process ``bin/phubb-worker.php``
 #. Let ``bin/phubb-cron.php`` be run by cron every minute.
 
 The hub URL is at ``http://$domain/hub.php``.
