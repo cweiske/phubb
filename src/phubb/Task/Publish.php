@@ -4,20 +4,13 @@ namespace phubb;
 /**
  * Notify all subscribers that a topic URL changed
  */
-class Task_Publish
+class Task_Publish extends Task_Base
 {
-    protected $db;
-
     /**
      * ID of the stored ping request in the database
      * @var integer
      */
     protected $nRequestId;
-
-    public function __construct(\PDO $db)
-    {
-        $this->db = $db;
-    }
 
     /**
      * @param \GearmanJob $job Job to execute
@@ -26,7 +19,7 @@ class Task_Publish
      */
     public function runJob(\GearmanJob $job)
     {
-        echo "Received job: " . $job->handle() . "\n";
+        $this->log->debug('Received job', array('handle' => $job->handle()));
         $url = $job->workload();
         return $this->run($url);
     }
@@ -40,20 +33,35 @@ class Task_Publish
      */
     public function run($url)
     {
+        $this->log->info(
+            'Starting job: publish', array('topic' => $url)
+        );
         $this->nRequestId = $this->storeRequest($url);
 
         list($rowTopic, $headers, $content) = $this->checkTopicUpdate($url);
         if ($content === false) {
             //an error occured fetching the data
+            $this->log->notice(
+                'Error in publish job: Error fetching data',
+                array('topic' => $url)
+            );
             return false;
         } else if ($content === true) {
             //content did not change; no need to send notifications
+            $this->log->info(
+                'Finishing publish job: Content did not change',
+                array('topic' => $url)
+            );
             return false;
         }
 
         $count = $this->notifySubscribers($url, $headers, $content);
         $this->updateRequestCount($count);
         $this->updateTopicStatus($rowTopic->t_id, $headers, $content);
+
+        $this->log->info(
+            'Finished job: publish', array('topic' => $url, 'count' => $count)
+        );
         return $count;
     }
 
@@ -198,12 +206,10 @@ class Task_Publish
             return array($rowTopic, false, false);
         } else if ($content === true) {
             //content did not change
-            //TODO: logging
             return array($rowTopic, true, true);
         }
 
         //TODO: extract "self" url
-        //TODO: check if modified
         return array($rowTopic, $headers, $content);
     }
 

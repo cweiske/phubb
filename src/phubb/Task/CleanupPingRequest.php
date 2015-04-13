@@ -1,15 +1,8 @@
 <?php
 namespace phubb;
 
-class Task_CleanupPingRequest
+class Task_CleanupPingRequest extends Task_Base
 {
-    protected $db;
-
-    public function __construct(\PDO $db)
-    {
-        $this->db = $db;
-    }
-
     /**
      * @param \GearmanJob $job Job to execute
      *
@@ -17,7 +10,7 @@ class Task_CleanupPingRequest
      */
     public function runJob(\GearmanJob $job)
     {
-        echo "Received job: " . $job->handle() . "\n";
+        $this->log->debug('Received job', array('handle' => $job->handle()));        
         
         return $this->run($job->workload());
     }
@@ -32,9 +25,18 @@ class Task_CleanupPingRequest
      */
     public function run($pingRequestId)
     {
+        $this->log->info(
+            'Starting job: cleanup ping request',
+            array('pr_id' => $pingRequestId)
+        );
+
         $this->deleteTmpFiles($pingRequestId);
         $this->deletePingRequestRow($pingRequestId);
-        //TODO: log
+
+        $this->log->info(
+            'Finished job: cleanup ping request',
+            array('pr_id' => $pingRequestId)
+        );
     }
 
     protected function deleteTmpFiles($pingRequestId)

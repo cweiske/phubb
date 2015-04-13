@@ -2,32 +2,36 @@
 <?php
 namespace phubb;
 require_once __DIR__ . '/../src/phubb/functions.php';
-$db = require __DIR__ . '/../src/phubb/db.php';
+$log = new Logger();
+$db = new Db($log);
 
 $gmworker= new \GearmanWorker();
 $gmworker->addServer('127.0.0.1');
 
-$taskCleanupPingRequest = new Task_CleanupPingRequest($db);
+$taskCleanupPingRequest = new Task_CleanupPingRequest($db, $log);
 $gmworker->addFunction(
-    'phubb_cleanup_pingrequest', array($taskCleanupPingRequest, 'runJob')
+    'phubb_cleanup_pingrequest', array($taskCleanupPingRequest, 'checkAndRunJob')
 );
 
-$taskPublish = new Task_Publish($db);
-$gmworker->addFunction('phubb_publish', array($taskPublish, 'runJob'));
+$taskPublish = new Task_Publish($db, $log);
+$gmworker->addFunction('phubb_publish', array($taskPublish, 'checkAndRunJob'));
 
-$taskNotifySubscriber = new Task_NotifySubscriber($db);
+$taskNotifySubscriber = new Task_NotifySubscriber($db, $log);
 $gmworker->addFunction(
-    'phubb_notifysubscriber', array($taskNotifySubscriber, 'runJob')
+    'phubb_notifysubscriber', array($taskNotifySubscriber, 'checkAndRunJob')
 );
 
-$taskVerify = new Task_Verify($db);
-$gmworker->addFunction('phubb_verify', array($taskVerify, 'runJob'));
+$taskVerify = new Task_Verify($db, $log);
+$gmworker->addFunction('phubb_verify', array($taskVerify, 'checkAndRunJob'));
 
-print "Waiting for job...\n";
+$log->info('Waiting for a job');
 while ($gmworker->work()) {
-    echo "finished a job\n";
+    //$log->debug('Finished job');
     if ($gmworker->returnCode() != GEARMAN_SUCCESS) {
-        echo "return_code: " . $gmworker->returnCode() . "\n";
+        $log->error(
+            'Error running job',
+            array('return_code' => $gmworker->returnCode())
+        );
         break;
     }
 }

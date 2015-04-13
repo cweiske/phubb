@@ -18,6 +18,8 @@ What works / Features
   - Notifications get only sent when the content changed.
     phubb uses etag, last modified and a hash on the content to check that.
 - Re-pinging a subscriber when it failed (exponential back-off)
+- Logging
+- Re-connecting to DB if we had a timeout
 
 
 Dependencies
@@ -77,7 +79,6 @@ References
 
 TODO
 ====
-- logging
 - stats
 - require domain registration before being able to publish
 

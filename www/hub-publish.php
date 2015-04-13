@@ -10,7 +10,8 @@ namespace phubb;
 header('HTTP/1.0 500 Internal Server Error');
 
 require_once __DIR__ . '/../src/phubb/functions.php';
-$db = require __DIR__ . '/../src/phubb/db.php';
+$log = new Logger();
+$db = new Db($log);
 
 if (!isset($_POST['hub_mode'])) {
     header('HTTP/1.0 400 Bad Request');
@@ -35,7 +36,7 @@ if (!isValidUrl($_POST['hub_url'])) {
 }
 $hubUrl = $_POST['hub_url'];
 
-//TODO: log request
+$log->notice('Received publish request', array('topic' => $hubUrl));
 
 //handle task in background
 $gmclient= new \GearmanClient();

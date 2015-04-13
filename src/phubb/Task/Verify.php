@@ -4,15 +4,8 @@ namespace phubb;
 /**
  * Verify a subscription request
  */
-class Task_Verify
+class Task_Verify extends Task_Base
 {
-    protected $db;
-
-    public function __construct(\PDO $db)
-    {
-        $this->db = $db;
-    }
-
     /**
      * @param \GearmanJob $job Job to execute
      *
@@ -20,7 +13,7 @@ class Task_Verify
      */
     public function runJob(\GearmanJob $job)
     {
-        echo "Received job: " . $job->handle() . "\n";
+        $this->log->debug('Received job', array('handle' => $job->handle()));        
         $req = unserialize($job->workload());
         return $this->runRequest($req);
     }
@@ -48,6 +41,8 @@ class Task_Verify
      */
     public function runRequest(Model_SubscriptionRequest $req)
     {
+        $this->log->info('Verifying subscription', (array) $req);
+
         $challenge = mt_rand();
         $url = $req->callback;
         $sep = strpos($url, '?') === false ? '?' : '&';
@@ -62,7 +57,8 @@ class Task_Verify
         if ($status != 200) {
             //subscription error
             $this->failSubscription(
-                'verification response status not 200 but ' . (int) $status
+                'verification response status not 200 but ' . (int) $status,
+                $req
             );
             return false;
         } else if ($res != $challenge) {
@@ -70,19 +66,23 @@ class Task_Verify
             $this->failSubscription(
                 'verification response does not match challenge but is '
                 . gettype($res) . '(' . strlen($res) . '): '
-                . '"' . str_replace("\n", '\\n', substr($res, 0, 128)) . '"'
+                . '"' . str_replace("\n", '\\n', substr($res, 0, 128)) . '"',
+                $req
             );
             return false;
         } else {
             //subscription validated
             $this->acceptSubscription($req);
+            $this->log->info('Subscription accepted', (array) $req);
             return true;
         }
     }
 
-    function failSubscription($reason)
+    function failSubscription($reason, Model_SubscriptionRequest $req)
     {
-        echo "fail: $reason\n";
+        $data = (array) $req;
+        $data['reason'] = $reason;
+        $this->log->notice('Verification failed', $data);
     }
 
     function acceptSubscription(Model_SubscriptionRequest $req)

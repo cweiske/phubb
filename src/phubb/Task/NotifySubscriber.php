@@ -4,15 +4,8 @@ namespace phubb;
 /**
  * Notify a single subscriber about a topic update
  */
-class Task_NotifySubscriber
+class Task_NotifySubscriber extends Task_Base
 {
-    protected $db;
-
-    public function __construct(\PDO $db)
-    {
-        $this->db = $db;
-    }
-
     /**
      * @param \GearmanJob $job Job to execute
      *
@@ -20,8 +13,7 @@ class Task_NotifySubscriber
      */
     public function runJob(\GearmanJob $job)
     {
-        echo "Received job: " . $job->handle() . "\n";
-        
+        $this->log->debug('Received job', array('handle' => $job->handle()));        
         $data = unserialize($job->workload());
         extract($data);
         return $this->run($topicUrl, $subscriptionId, $pingRequestId);
@@ -39,13 +31,29 @@ class Task_NotifySubscriber
      */
     public function run($topicUrl, $subscriptionId, $pingRequestId)
     {
+        $this->log->info(
+            'Starting job: notify subscriber',
+            array(
+                'topic' => $topicUrl,
+                'sub_id' => $subscriptionId,
+                'pr_id' => $pingRequestId
+            )
+        );
+
         $stmt = $this->db->prepare('SELECT * FROM subscriptions WHERE sub_id = :id');
         $stmt->execute(array(':id' => $subscriptionId));
         $rowSubscription = $stmt->fetch();
         if ($rowSubscription === false) {
+            $this->log->notice(
+                'Error notifying subscriber: Subscription not found',
+                array(
+                    'topic' => $topicUrl,
+                    'sub_id' => $subscriptionId,
+                    'pr_id' => $pingRequestId
+                )
+            );
             return false;
         }
-        //FIXME: check lease time
 
         list($fileHeaders, $fileContent) = Helper::getTmpFilePaths($pingRequestId);
         $headers = unserialize(file_get_contents($fileHeaders));
@@ -73,6 +81,15 @@ class Task_NotifySubscriber
         if (intval($code / 100) === 2) {
             $this->storeSuccess($pingRequestId, $rowSubscription->sub_id);
             $this->checkRequestCleanup($pingRequestId);
+            $this->log->info(
+                'Subscriber notified',
+                array(
+                    'topic' => $topicUrl,
+                    'sub_id' => $subscriptionId,
+                    'sub_url' => $rowSubscription->sub_callback,
+                    'pr_id' => $pingRequestId
+                )
+            );
             return true;
         } else {
             $this->storeFail($pingRequestId, $rowSubscription->sub_id);
@@ -81,8 +98,27 @@ class Task_NotifySubscriber
             );
             if (!$hasNext) {
                 $this->cancelRePing($pingRequestId, $rowSubscription->sub_id);
+                $this->log->info(
+                    'Cancelling re-ping of subscriber',
+                    array(
+                        'topic' => $topicUrl,
+                        'sub_id' => $subscriptionId,
+                        'sub_url' => $rowSubscription->sub_callback,
+                        'pr_id' => $pingRequestId
+                    )
+                );
             }
             $this->checkRequestCleanup($pingRequestId);
+
+            $this->log->info(
+                'Failed to notify subscriber',
+                array(
+                    'topic' => $topicUrl,
+                    'sub_id' => $subscriptionId,
+                    'sub_url' => $rowSubscription->sub_callback,
+                    'pr_id' => $pingRequestId
+                )
+            );
             return false;
         }
     }

@@ -2,16 +2,17 @@
 <?php
 namespace phubb;
 require_once __DIR__ . '/../src/phubb/functions.php';
-$db = require __DIR__ . '/../src/phubb/db.php';
+$log = new Logger();
+$db = new Db($log);
 
 $params = $argv;
 array_shift($params);
 
 $arTasks = array(
-    'publish' => new Task_Publish($db),
-    'notifysubscriber' => new Task_NotifySubscriber($db),
-    'verify' => new Task_Verify($db),
-    'cleanup_pingrequest' => new Task_CleanupPingRequest($db),
+    'publish' => new Task_Publish($db, $log),
+    'notifysubscriber' => new Task_NotifySubscriber($db, $log),
+    'verify' => new Task_Verify($db, $log),
+    'cleanup_pingrequest' => new Task_CleanupPingRequest($db, $log),
 );
 $taskname = array_shift($params);
 if (!isset($arTasks[$taskname])) {

@@ -1,6 +1,7 @@
 <?php
 namespace phubb;
 require_once __DIR__ . '/autoloader.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 function isValidUrl($url)
 {
