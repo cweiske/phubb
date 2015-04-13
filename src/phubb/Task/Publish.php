@@ -19,7 +19,7 @@ class Task_Publish extends Task_Base
      */
     public function runJob(\GearmanJob $job)
     {
-        $this->log->debug('Received job', array('handle' => $job->handle()));
+        $this->log->debug('Received job', array('job' => $this->jobHandle));
         $url = $job->workload();
         return $this->run($url);
     }
@@ -34,7 +34,8 @@ class Task_Publish extends Task_Base
     public function run($url)
     {
         $this->log->info(
-            'Starting job: publish', array('topic' => $url)
+            'Starting job: publish',
+            array('topic' => $url, 'job' => $this->jobHandle)
         );
         $this->nRequestId = $this->storeRequest($url);
 
@@ -43,14 +44,14 @@ class Task_Publish extends Task_Base
             //an error occured fetching the data
             $this->log->notice(
                 'Error in publish job: Error fetching data',
-                array('topic' => $url)
+                array('topic' => $url, 'job' => $this->jobHandle)
             );
             return false;
         } else if ($content === true) {
             //content did not change; no need to send notifications
             $this->log->info(
                 'Finishing publish job: Content did not change',
-                array('topic' => $url)
+                array('topic' => $url, 'job' => $this->jobHandle)
             );
             return false;
         }
@@ -60,7 +61,8 @@ class Task_Publish extends Task_Base
         $this->updateTopicStatus($rowTopic->t_id, $headers, $content);
 
         $this->log->info(
-            'Finished job: publish', array('topic' => $url, 'count' => $count)
+            'Finished job: publish',
+            array('topic' => $url, 'count' => $count, 'job' => $this->jobHandle)
         );
         return $count;
     }
@@ -143,7 +145,13 @@ class Task_Publish extends Task_Base
                 )
             );
             if ($gmclient->returnCode() != GEARMAN_SUCCESS) {
-                echo "bad return code\n";
+                $this->log->warning(
+                    'Error queuing task to notify subscriber',
+                    array(
+                        'return_code' => $gmclient->returnCode(),
+                        'job' => $this->jobHandle
+                    )
+                );
             }
             ++$count;
         }

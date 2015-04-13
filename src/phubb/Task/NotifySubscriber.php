@@ -13,7 +13,7 @@ class Task_NotifySubscriber extends Task_Base
      */
     public function runJob(\GearmanJob $job)
     {
-        $this->log->debug('Received job', array('handle' => $job->handle()));        
+        $this->log->debug('Received job', array('job' => $this->jobHandle));
         $data = unserialize($job->workload());
         extract($data);
         return $this->run($topicUrl, $subscriptionId, $pingRequestId);
@@ -36,7 +36,8 @@ class Task_NotifySubscriber extends Task_Base
             array(
                 'topic' => $topicUrl,
                 'sub_id' => $subscriptionId,
-                'pr_id' => $pingRequestId
+                'pr_id' => $pingRequestId,
+                'job' => $this->jobHandle,
             )
         );
 
@@ -49,7 +50,8 @@ class Task_NotifySubscriber extends Task_Base
                 array(
                     'topic' => $topicUrl,
                     'sub_id' => $subscriptionId,
-                    'pr_id' => $pingRequestId
+                    'pr_id' => $pingRequestId,
+                    'job' => $this->jobHandle,
                 )
             );
             return false;
@@ -87,7 +89,8 @@ class Task_NotifySubscriber extends Task_Base
                     'topic' => $topicUrl,
                     'sub_id' => $subscriptionId,
                     'sub_url' => $rowSubscription->sub_callback,
-                    'pr_id' => $pingRequestId
+                    'pr_id' => $pingRequestId,
+                    'job' => $this->jobHandle,
                 )
             );
             return true;
@@ -104,7 +107,8 @@ class Task_NotifySubscriber extends Task_Base
                         'topic' => $topicUrl,
                         'sub_id' => $subscriptionId,
                         'sub_url' => $rowSubscription->sub_callback,
-                        'pr_id' => $pingRequestId
+                        'pr_id' => $pingRequestId,
+                        'job' => $this->jobHandle,
                     )
                 );
             }
@@ -116,7 +120,8 @@ class Task_NotifySubscriber extends Task_Base
                     'topic' => $topicUrl,
                     'sub_id' => $subscriptionId,
                     'sub_url' => $rowSubscription->sub_callback,
-                    'pr_id' => $pingRequestId
+                    'pr_id' => $pingRequestId,
+                    'job' => $this->jobHandle,
                 )
             );
             return false;

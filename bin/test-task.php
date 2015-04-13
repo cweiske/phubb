@@ -23,6 +23,7 @@ if (!isset($arTasks[$taskname])) {
 }
 
 $task = $arTasks[$taskname];
+$task->jobHandle = uniqid('test-');
 $res = call_user_func_array(
     array($task, 'run'),
     $params

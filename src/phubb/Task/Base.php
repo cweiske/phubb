@@ -4,6 +4,7 @@ namespace phubb;
 abstract class Task_Base
 {
     protected $db;
+    public $jobHandle;
 
     public function __construct(Db $db, Logger $log)
     {
@@ -18,6 +19,7 @@ abstract class Task_Base
      */
     public function checkAndRunJob(\GearmanJob $job)
     {
+        $this->jobHandle = $job->handle();
         $this->db->reconnect();
         return $this->runJob($job);
     }

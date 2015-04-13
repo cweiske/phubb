@@ -2,11 +2,17 @@
 <?php
 namespace phubb;
 require_once __DIR__ . '/../src/phubb/functions.php';
-$db = require __DIR__ . '/../src/phubb/db.php';
+$log = new Logger();
+$db = new Db($log);
+$jobHandle = uniqid('phubb-cron-');
 
 $nRePings = scheduleRePings($db);
 //FIXME: --quiet parameter
-echo $nRePings . " re-pings\n";
+if ($nRePings > 0) {
+    $log->notice($nRePings . ' re-pings', array('job' => $jobHandle));
+} else {
+    $log->debug($nRePings . ' re-pings', array('job' => $jobHandle));
+}
 
 function scheduleRePings($db)
 {
@@ -31,7 +37,15 @@ function scheduleRePings($db)
             )
         );
         if ($gmclient->returnCode() != GEARMAN_SUCCESS) {
-            echo "bad return code\n";
+            $this->log->warning(
+                'Error queueing re-ping task',
+                array(
+                    'job' => $jobHandle,
+                    'return_code' => $gmclient->returnCode(),
+                    'topic'  => $rowRePing->pr_url,
+                    'reping' => $rowRePing->rp_id
+                )
+            );
         } else {
             $db->prepare(
                 'UPDATE repings SET rp_scheduled = 1'

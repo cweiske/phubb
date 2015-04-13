@@ -13,7 +13,7 @@ class Task_Verify extends Task_Base
      */
     public function runJob(\GearmanJob $job)
     {
-        $this->log->debug('Received job', array('handle' => $job->handle()));        
+        $this->log->debug('Received job', array('job' => $this->jobHandle));
         $req = unserialize($job->workload());
         return $this->runRequest($req);
     }
@@ -41,7 +41,10 @@ class Task_Verify extends Task_Base
      */
     public function runRequest(Model_SubscriptionRequest $req)
     {
-        $this->log->info('Verifying subscription', (array) $req);
+        $this->log->info(
+            'Verifying subscription',
+            array_merge((array) $req, array('job' => $this->jobHandle))
+        );
 
         $challenge = mt_rand();
         $url = $req->callback;
@@ -73,7 +76,9 @@ class Task_Verify extends Task_Base
         } else {
             //subscription validated
             $this->acceptSubscription($req);
-            $this->log->info('Subscription accepted', (array) $req);
+            $this->log->info(
+                'Subscription accepted', array('job' => $this->jobHandle)
+            );
             return true;
         }
     }
@@ -82,6 +87,7 @@ class Task_Verify extends Task_Base
     {
         $data = (array) $req;
         $data['reason'] = $reason;
+        $data['job']    = $this->jobHandle;
         $this->log->notice('Verification failed', $data);
     }
 

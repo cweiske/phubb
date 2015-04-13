@@ -10,8 +10,8 @@ class Task_CleanupPingRequest extends Task_Base
      */
     public function runJob(\GearmanJob $job)
     {
-        $this->log->debug('Received job', array('handle' => $job->handle()));        
-        
+        $this->log->debug('Received job', array('job' => $this->jobHandle));
+
         return $this->run($job->workload());
     }
 
@@ -27,7 +27,7 @@ class Task_CleanupPingRequest extends Task_Base
     {
         $this->log->info(
             'Starting job: cleanup ping request',
-            array('pr_id' => $pingRequestId)
+            array('pr_id' => $pingRequestId, 'job' => $this->jobHandle)
         );
 
         $this->deleteTmpFiles($pingRequestId);
@@ -35,7 +35,7 @@ class Task_CleanupPingRequest extends Task_Base
 
         $this->log->info(
             'Finished job: cleanup ping request',
-            array('pr_id' => $pingRequestId)
+            array('pr_id' => $pingRequestId, 'job' => $this->jobHandle)
         );
     }
 
