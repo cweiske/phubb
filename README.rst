@@ -11,6 +11,11 @@ What works / Features
 =====================
 - Subscribing to a topic
 - Notifying the hub about a topic update
+
+  - Wildcard URLs supported (with ``*``).
+    All matching subscribed topics are then checked if they changed and
+    notifications are sent out.
+    Wildcards in domain or scheme are not allowed.
 - Sending notifications to subscribers
 
   - As many worker-processes as you want to speed it up
@@ -72,6 +77,10 @@ Publish an update::
 
   $ ./bin/test-task.php publish http://www.bogo/tagebuch/feed/
 
+or, to automatically publish all modified URLs in that path::
+
+  $ ./bin/test-task.php publish http://www.bogo/tagebuch/*
+
 Notify subscriber::
 
   $ ./bin/test-task.php notifysubscriber http://www.bogo/tagebuch/feed/ 1 55140a8d865a9
@@ -89,5 +98,3 @@ TODO
 
   - check if URL topic URL has hub link (and self link)
 - do not allow subscriptions for urls that are not registered
-- maybe: give phubb a base url, and it figures out by itself what actually
-  changed

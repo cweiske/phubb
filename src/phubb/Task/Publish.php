@@ -37,6 +37,41 @@ class Task_Publish extends Task_Base
             'Starting job: publish',
             array('topic' => $url, 'job' => $this->jobHandle)
         );
+
+        if (strpos($url, '*') === false) {
+            $count = $this->publishSingleUrl($url);
+        } else {
+            //there is a wildcard. check all topics people are subscribed to
+            $urls = $this->expandWildcard($url);
+            $this->log->info(
+                'Publishing wildcard URL',
+                array(
+                    'topic' => $url, 'url_count' => count($urls),
+                    'job' => $this->jobHandle
+                )
+            );
+            $count = 0;
+            foreach ($urls as $singleUrl) {
+                $count += $this->publishSingleUrl($singleUrl);
+            }
+        }
+
+        $this->log->info(
+            'Finished job: publish',
+            array('topic' => $url, 'count' => $count, 'job' => $this->jobHandle)
+        );
+        return $count;
+    }
+
+    /**
+     * Starts publish job for a single URL
+     *
+     * @param string $url Topic URL to send updates for
+     *
+     * @return int Number of started notification jobs
+     */
+    protected function publishSingleUrl($url)
+    {
         $this->nRequestId = $this->storeRequest($url);
 
         list($rowTopic, $headers, $content) = $this->checkTopicUpdate($url);
@@ -60,10 +95,6 @@ class Task_Publish extends Task_Base
         $this->updateRequestCount($count);
         $this->updateTopicStatus($rowTopic->t_id, $headers, $content);
 
-        $this->log->info(
-            'Finished job: publish',
-            array('topic' => $url, 'count' => $count, 'job' => $this->jobHandle)
-        );
         return $count;
     }
 
@@ -316,6 +347,38 @@ class Task_Publish extends Task_Base
                 ':id'   => $topicId,
             )
         );
+    }
+
+    /**
+     * Fetches all "real" URLs from a wildcard URL.
+     * "*" is supported.
+     *
+     * @param string $url Wildcard URL to expand
+     *
+     * @return array URLs that match the pattern.
+     */
+    protected function expandWildcard($url)
+    {
+        if ($url == '*') {
+            return array();
+        }
+        $host = parse_url($url, PHP_URL_HOST);
+        if (strpos($host, '*') !== false) {
+            //no wildcards in domains allowed
+            return array();
+        }
+
+        $stmt = $this->db->prepare(
+            'SELECT DISTINCT sub_topic FROM subscriptions'
+            . ' WHERE sub_topic LIKE :topic'
+            . ' AND sub_lease_end >= NOW()'
+        );
+        $stmt->execute(array(':topic' => str_replace('*', '%', $url)));
+        $urls = array();
+        foreach ($stmt as $rowSubscription) {
+            $urls[] = $rowSubscription->sub_topic;
+        }
+        return $urls;
     }
 }
 ?>
