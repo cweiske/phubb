@@ -61,7 +61,13 @@ Send a POST request with the following data::
     hub.url=http://topic-url.example.org/
 
 Example::
+
     $ curl -d hub.mode=publish -d "hub.url=http://blog.example.org/feed"\
+        http://phubb.example.org/hub.php
+
+or, to automatically publish all modified URLs in that path::
+
+    $ curl -d hub.mode=publish -d "hub.url=http://blog.example.org/*"\
         http://phubb.example.org/hub.php
 
 
@@ -76,10 +82,6 @@ Verify a subscription::
 Publish an update::
 
   $ ./bin/test-task.php publish http://www.bogo/tagebuch/feed/
-
-or, to automatically publish all modified URLs in that path::
-
-  $ ./bin/test-task.php publish http://www.bogo/tagebuch/*
 
 Notify subscriber::
 
@@ -98,3 +100,4 @@ TODO
 
   - check if URL topic URL has hub link (and self link)
 - do not allow subscriptions for urls that are not registered
+- custom user agent when fetching URLs
