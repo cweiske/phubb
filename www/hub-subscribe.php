@@ -4,7 +4,7 @@ header('HTTP/1.0 500 Internal Server Error');
 
 require_once __DIR__ . '/../src/phubb/functions.php';
 
-$defaultLeaseSeconds = 86400;
+$defaultLeaseSeconds = 7 * 86400 + 3600;
 //PHP converts dots to underscore, so hub.mode becomes hub_mode
 if (!isset($_POST['hub_callback'])) {
     header('HTTP/1.0 400 Bad Request');
@@ -54,8 +54,8 @@ if (isset($_POST['hub_lease_seconds']) && $_POST['hub_lease_seconds'] != '') {
         exit(1);
     }
     $hubLeaseSeconds = (int) $_POST['hub_lease_seconds'];
-    if ($hubLeaseSeconds > 7 * 86400) {
-        $hubLeaseSeconds = 7 * 86400;
+    if ($hubLeaseSeconds > $defaultLeaseSeconds) {
+        $hubLeaseSeconds = $defaultLeaseSeconds;
     }
 } else {
     $hubLeaseSeconds = $defaultLeaseSeconds;
