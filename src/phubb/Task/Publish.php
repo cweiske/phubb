@@ -140,7 +140,7 @@ class Task_Publish extends Task_Base
      *
      * @param string $url     Topic URL
      * @param array  $headers Array of HTTP headers from fetching the URL
-     * @param string $content Content
+     * @param string $content Content of URL to publish
      *
      * @return integer Number of worker jobs that have been created
      *                 (Thus the number of subscribers)
@@ -151,7 +151,7 @@ class Task_Publish extends Task_Base
             $this->nRequestId
         );
 
-        $headers = $this->filterHeaders($headers);
+        $headers = $this->filterHeaders($headers, strlen($content));
         file_put_contents($fileHeaders, serialize($headers));
         file_put_contents($fileContent, $content);
 
@@ -196,14 +196,13 @@ class Task_Publish extends Task_Base
      *
      * @return array Filtered array of HTTP headers
      */
-    protected function filterHeaders($headers)
+    protected function filterHeaders($headers, $contentLength)
     {
         $headersToSend  = array();
         $allowedHeaders = array_flip(
             array(
-                //content headers are set by POST already
-                //'content-length',
-                //'content-type',
+                'content-length',
+                'content-type',
                 'etag',
                 'last-modified',
                 'link',
@@ -211,11 +210,27 @@ class Task_Publish extends Task_Base
             )
         );
 
+        $hasType = false;
+        $hasLength = false;
         foreach ($this->parseHeaders($headers) as $name => $value) {
             if (isset($allowedHeaders[$name])) {
                 $headersToSend[] = $name . ': ' . $value;
+                if ($name == 'content-length') {
+                    $hasLength = true;
+                } else if ($name == 'content-type') {
+                    $hasType = true;
+                }
             }
         }
+
+        if (!$hasType) {
+            //we do not know it
+            $headersToSend[] = 'content-type: application/octet-stream';
+        }
+        if (!$hasLength) {
+            $headersToSend[] = 'content-length: ' . $contentLength;
+        }
+
         return $headersToSend;
     }
 

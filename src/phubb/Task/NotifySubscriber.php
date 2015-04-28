@@ -61,7 +61,6 @@ class Task_NotifySubscriber extends Task_Base
         $headers = unserialize(file_get_contents($fileHeaders));
         $content = file_get_contents($fileContent);
 
-        $headers[] = 'Content-type: application/x-www-form-urlencoded';
         if ($rowSubscription->sub_secret != '') {
             $headers[] = 'X-Hub-Signature: sha1='
                 . hash_hmac('sha1', $content, $rowSubscription->sub_secret);
