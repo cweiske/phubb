@@ -24,6 +24,9 @@ if ($_POST['hub_mode'] != 'publish') {
     exit(1);
 }
 
+if (!isset($_POST['hub_url']) && isset($_POST['hub_topic'])) {
+    $_POST['hub_url'] = $_POST['hub_topic'];
+}
 if (!isset($_POST['hub_url'])) {
     header('HTTP/1.0 400 Bad Request');
     echo "Parameter missing: hub.url\n";
