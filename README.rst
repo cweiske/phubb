@@ -2,9 +2,18 @@
 phubb - PHP PubSubHubbub server
 *******************************
 
+A PubSubHubbub__ server written in PHP, ready to be run on your own server.
+
+Use it to instantly notify subscribers about updates on your blog's feed,
+your website's HTML pages or any other HTTP-accessible resources.
+
 Work in progress. Basic functionality is working.
 
 Implements PubSubHubbub 0.4.
+
+__ https://github.com/pubsubhubbub/PubSubHubbub/
+
+.. contents::
 
 
 What works / Features
