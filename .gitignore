@@ -2,3 +2,4 @@ tmp/*
 data/phubb.config.php
 phubb.log
 /vendor/
+README.html

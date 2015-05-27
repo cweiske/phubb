@@ -40,8 +40,9 @@ Installation
 ============
 #. Point the web server's document root to the ``www/`` directory.
 #. Create a new MySQL database and import the schema from ``data/schema.sql``.
-   Database host and username/password/db name are currently harcoded to
-   ``127.0.0.1`` and ``pubb``.
+   Database host and username/password/db name can be adjusted by copying
+   ``data/phubb.config.php.dist`` to ``data/phubb.config.php`` and
+   adjusting it to your needs.
 #. Install dependencies::
 
      $ composer install
@@ -101,3 +102,25 @@ TODO
   - check if URL topic URL has hub link (and self link)
 - do not allow subscriptions for urls that are not registered
 - custom user agent when fetching URLs
+
+
+Source code
+===========
+phubb's source code is available from http://git.cweiske.de/phubb.git
+or the `mirror on github`__.
+
+__ https://github.com/cweiske/phubb
+
+
+License
+=======
+phubb is licensed under the `AGPL v3 or later`__.
+
+__ http://www.gnu.org/licenses/agpl.html
+
+
+Author
+======
+phubb was written by `Christian Weiske`__.
+
+__ http://cweiske.de/
