@@ -16,6 +16,8 @@ if ($nRePings > 0) {
 
 function scheduleRePings($db)
 {
+    global $log;
+
     $gmclient= new \GearmanClient();
     $gmclient->addServer('127.0.0.1');
 
@@ -37,7 +39,7 @@ function scheduleRePings($db)
             )
         );
         if ($gmclient->returnCode() != GEARMAN_SUCCESS) {
-            $this->log->warning(
+            $log->warning(
                 'Error queueing re-ping task',
                 array(
                     'job' => $jobHandle,
