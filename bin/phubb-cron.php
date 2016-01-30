@@ -18,7 +18,7 @@ function scheduleRePings($db)
 {
     global $log;
 
-    $gmclient= new \GearmanClient();
+    $gmclient = new \GearmanClient();
     $gmclient->addServer('127.0.0.1');
 
     $res = $db->query(
