@@ -199,7 +199,7 @@ class Task_NotifySubscriber extends Task_Base
                     ':pr'    => $pingRequestId,
                     ':sub'   => $subscriptionId,
                     ':next'  => $this->getNextTryTime(0),
-                    ':error' => $error,
+                    ':error' => (string) $error,
                 )
             );
 
