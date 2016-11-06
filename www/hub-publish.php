@@ -37,6 +37,12 @@ if (!isValidUrl($_POST['hub_url'])) {
     echo "Invalid parameter value for hub.url: Invalid URL\n";
     exit(1);
 }
+if (!isValidTopic($_POST['hub_url'])) {
+    header('HTTP/1.0 400 Bad Request');
+    echo "Invalid parameter value for hub.url: URL not allowed\n";
+    exit(1);
+}
+
 $hubUrl = $_POST['hub_url'];
 
 $log->notice('Received publish request', array('topic' => $hubUrl));

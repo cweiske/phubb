@@ -95,19 +95,4 @@ function initiateVerification(Model_SubscriptionRequest $req)
         exit(1);
     }
 }
-
-function isValidTopic($url)
-{
-    require __DIR__ . '/../data/phubb.config.php';
-    if (!is_array($topicBlacklist) || !count($topicBlacklist)) {
-        return true;
-    }
-
-    $host = parse_url($url, PHP_URL_HOST);
-    if (array_search($host, $topicBlacklist) !== false) {
-        return false;
-    }
-
-    return true;
-}
 ?>
