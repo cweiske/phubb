@@ -62,6 +62,25 @@ Installation
 The hub URL is at ``http://$domain/hub.php``.
 
 
+System service
+--------------
+When using systemd, you can let it run multiple worker instances when
+the system boots up:
+
+#. Copy files ``data/systemd/phubb*.service`` into ``/etc/systemd/system/``
+#. Adjust user and group names
+#. Enable three worker processes::
+
+     $ systemctl daemon-reload
+     $ systemctl enable phubb@1
+     $ systemctl enable phubb@2
+     $ systemctl enable phubb@3
+     $ systemctl enable phubb
+     $ systemctl start phubb
+#. Now three workers are running. Restarting the ``phubb`` service also
+   restarts the workers.
+
+
 Notifying the hub about an update
 =================================
 

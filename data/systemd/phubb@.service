@@ -1,0 +1,17 @@
+[Unit]
+Description=phubb pubsub server %i
+PartOf=phubb.service
+ReloadPropagatedFrom=phubb.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/cweiske/www/phubb.cweiske.de/
+User=cweiske
+Group=www-cweiske
+ExecStart=/home/cweiske/www/phubb.cweiske.de/bin/phubb-worker.php
+TimeoutStopSec=5
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=phubb.service
