@@ -46,6 +46,38 @@ class Task_Verify extends Task_Base
             array_merge((array) $req, array('job' => $this->jobHandle))
         );
 
+        if (!$this->verifyTopic($req->topic)) {
+            return false;
+        }
+        return $this->verifySubscriber($req);
+        //TODO: store topic URL if it does not exist
+    }
+
+    /**
+     * Check that the topic URL exists and that it propagates this hub.
+     *
+     * @param string $topicUrl URL the subscriber wants to subscribe to
+     *
+     * @return boolean True if the topic is valid, false if we cannot
+     *                 find it or accept it
+     */
+    protected function verifyTopic($topicUrl)
+    {
+        //TODO: check if topic exists
+        //TODO: check if topic proposes this hub in the link header
+        return true;
+    }
+
+    /**
+     * Verify that the subscriber really wanted to subscribe
+     *
+     * @return boolean True if all went well, false if not
+     */
+    protected function verifySubscriber(Model_SubscriptionRequest $req)
+    {
+        $req->leaseSeconds = max($req->leaseSeconds, 86400 * 7);
+        $req->leaseSeconds = min($req->leaseSeconds, 86400 * 365);
+
         $challenge = mt_rand();
         $url = $req->callback;
         $sep = strpos($url, '?') === false ? '?' : '&';
@@ -85,6 +117,7 @@ class Task_Verify extends Task_Base
 
     function failSubscription($reason, Model_SubscriptionRequest $req)
     {
+        //TODO: send fail message to subscriber
         $data = (array) $req;
         $data['reason'] = $reason;
         $data['job']    = $this->jobHandle;
