@@ -38,7 +38,12 @@ function scheduleRePings($db)
                 )
             )
         );
-        if ($gmclient->returnCode() != GEARMAN_SUCCESS) {
+        if ($gmclient->returnCode() == GEARMAN_SUCCESS) {
+            $db->prepare(
+                'UPDATE repings SET rp_scheduled = 1'
+                . ' WHERE rp_id = :id'
+            )->execute(array(':id' => $rowRePing->rp_id));
+        } else {
             $log->warning(
                 'Error queueing re-ping task',
                 array(
@@ -48,11 +53,6 @@ function scheduleRePings($db)
                     'reping' => $rowRePing->rp_id
                 )
             );
-        } else {
-            $db->prepare(
-                'UPDATE repings SET rp_scheduled = 1'
-                . ' WHERE rp_id = :id'
-            )->execute(array(':id' => $rowRePing->rp_id));
         }
         ++$count;
     }
