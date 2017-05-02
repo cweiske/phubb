@@ -126,7 +126,27 @@ class Task_Verify extends Task_Base
 
     function acceptSubscription(Model_SubscriptionRequest $req)
     {
+        $stmt = $this->db->prepare(
+            'SELECT sub_id FROM subscriptions'
+            . ' WHERE sub_callback = :callback AND sub_topic = :topic'
+        );
+        $stmt->execute(
+            array(
+                ':callback' => $req->callback,
+                ':topic'    => $req->topic
+            )
+        );
+        $rowSub = $stmt->fetch();
+
         if ($req->mode == 'unsubscribe') {
+            //repings
+            if ($rowSub !== false) {
+                $this->db->prepare(
+                    'DELETE FROM repings WHERE rp_sub_id = :sub_id'
+                )->execute([':sub_id' => $rowSub->sub_id]);
+            }
+
+            //subscription itself
             $this->db->prepare(
                 'DELETE FROM subscriptions'
                 . ' WHERE sub_callback = :callback AND sub_topic = :topic'
@@ -144,17 +164,6 @@ class Task_Verify extends Task_Base
             return;
         }
     
-        $stmt = $this->db->prepare(
-            'SELECT sub_id FROM subscriptions'
-            . ' WHERE sub_callback = :callback AND sub_topic = :topic'
-        );
-        $stmt->execute(
-            array(
-                ':callback' => $req->callback,
-                ':topic'    => $req->topic
-            )
-        );
-        $rowSub = $stmt->fetch();
         if ($rowSub === false) {
             //new subscription
             $this->db->prepare(

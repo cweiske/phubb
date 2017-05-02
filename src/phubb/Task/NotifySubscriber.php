@@ -184,6 +184,12 @@ class Task_NotifySubscriber extends Task_Base
         $gmclient->doBackground('phubb_cleanup_pingrequest', $pingRequestId);
     }
 
+    /**
+     * A ping needs to be re-scheduled because it failed
+     *
+     * @return boolean True if it was scheduled, false if
+     *                 it expired (too many repings) and needs to be deleted
+     */
     protected function scheduleRePing($pingRequestId, $subscriptionId, $error)
     {
         $rowRePing = $this->getRePing($pingRequestId, $subscriptionId);
@@ -217,6 +223,7 @@ class Task_NotifySubscriber extends Task_Base
             );
             if ($nextTry === false) {
                 //we do not try again
+                //reping deletion happens later in run()
                 return false;
             }
             $this->db->prepare(
@@ -252,7 +259,7 @@ class Task_NotifySubscriber extends Task_Base
             . ' SET pr_ping_reping = pr_ping_reping - 1'
             . ', pr_ping_error = pr_ping_error + 1'
             . ', pr_updated = NOW()'
-                . ' WHERE pr_id = :id'
+            . ' WHERE pr_id = :id'
         )->execute(array(':id' => $pingRequestId));
     }
 
