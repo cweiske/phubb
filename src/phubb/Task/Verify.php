@@ -138,77 +138,28 @@ class Task_Verify extends Task_Base
         );
         $rowSub = $stmt->fetch();
 
+        $subs = new Service_Subscription($this->db);
         if ($req->mode == 'unsubscribe') {
-            //repings
-            if ($rowSub !== false) {
-                $this->db->prepare(
-                    'DELETE FROM repings WHERE rp_sub_id = :sub_id'
-                )->execute([':sub_id' => $rowSub->sub_id]);
-            }
-
-            //subscription itself
-            $this->db->prepare(
-                'DELETE FROM subscriptions'
-                . ' WHERE sub_callback = :callback AND sub_topic = :topic'
-            )->execute(
-                array(
-                    ':callback' => $req->callback,
-                    ':topic'    => $req->topic
-                )
+            $subs->delete(
+                $rowSub !== false ? $rowSub->sub_id : null,
+                $req->callback,
+                $req->topic
             );
-            $this->db->prepare(
-                'UPDATE topics SET t_subscriber = t_subscriber - 1'
-                . ',t_updated = NOW()'
-                . ' WHERE t_url = :topic'
-            )->execute(array(':topic' => $req->topic));
             return;
         }
     
         if ($rowSub === false) {
             //new subscription
-            $this->db->prepare(
-                'INSERT INTO subscriptions'
-                . '(sub_created, sub_updated, sub_callback, sub_topic, sub_secret'
-                . ', sub_lease_seconds, sub_lease_end)'
-                . ' VALUES(NOW(), NOW(), :callback, :topic, :secret'
-                . ', :leaseSeconds, :leaseEnd)'
-            )->execute(
-                array(
-                    ':callback' => $req->callback,
-                    ':topic'    => $req->topic,
-                    ':secret'   => $req->secret,
-                    ':leaseSeconds' => $req->leaseSeconds,
-                    ':leaseEnd' => date(
-                        'Y-m-d H:i:s', time() + $req->leaseSeconds
-                    )
-                )
+            $subs->create(
+                $req->callback,
+                $req->topic,
+                $req->secret,
+                $req->leaseSeconds
             );
-            $this->db->prepare(
-                'UPDATE topics SET t_subscriber = t_subscriber + 1'
-                . ',t_updated = NOW()'
-                . ' WHERE t_url = :topic'
-            )->execute(array(':topic' => $req->topic));
-            return;
+        } else {
+            //existing subscription
+            $subs->update($rowSub->sub_id, $req->secret, $req->leaseSeconds);
         }
-
-        //existing subscription
-        $this->db->prepare(
-            'UPDATE subscriptions SET'
-            . ' sub_updated = NOW()'
-            . ', sub_secret = :secret'
-            . ', sub_lease_seconds = :leaseSeconds'
-            . ', sub_lease_end = :leaseEnd'
-            . ' WHERE sub_id = :id'
-        )->execute(
-            array(
-                ':secret'       => $req->secret,
-                ':leaseSeconds' => $req->leaseSeconds,
-                ':leaseEnd'     => date(
-                    'Y-m-d H:i:s', time() + $req->leaseSeconds
-                ),
-                ':id'           => $rowSub->sub_id
-            )
-        );
     }
 
 }
