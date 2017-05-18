@@ -10,4 +10,7 @@ $logFile = '/var/log/phubb.log';
 
 //list of domains not to accept
 $topicBlacklist = array();
+
+//enable development test scripts
+$devMode = false;
 ?>

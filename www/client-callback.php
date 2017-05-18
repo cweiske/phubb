@@ -1,5 +1,18 @@
 <?php
+/**
+ * Test script that can be used as a subscriber callback URL
+ *
+ * @param GET:failcode HTTP status code to fail with
+ */
 header('HTTP/1.0 500 Internal Server Error');
+
+require_once __DIR__ . '/../data/phubb.config.php';
+if (!$devMode) {
+    header('HTTP/1.0 403 Forbidden');
+    echo "devMode is disabled\n";
+    exit(0);
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     if (isset($_GET['hub_challenge'])) {
         //TODO: verify subscription request is open

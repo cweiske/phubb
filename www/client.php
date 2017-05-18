@@ -1,4 +1,14 @@
 <?php
+/**
+ * Test script to initiate a subscription
+ */
+require_once __DIR__ . '/../data/phubb.config.php';
+if (!$devMode) {
+    header('HTTP/1.0 403 Forbidden');
+    echo "devMode is disabled\n";
+    exit(0);
+}
+
 $hub      = 'http://phubb.bogo/hub.php';
 $callback = 'http://phubb.bogo/client-callback.php';
 $topic    = 'http://www.bogo/tagebuch/feed/';
