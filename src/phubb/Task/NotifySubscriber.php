@@ -93,6 +93,29 @@ class Task_NotifySubscriber extends Task_Base
                 )
             );
             return true;
+
+        } else if ($code == 410) {
+            //410 Gone - subscriber is not subscribed anymore
+            // and somehow we did not get the unsubscription request
+            $this->cancelRePing($pingRequestId, $subscriptionId);
+            $subs = new Service_Subscription($this->db);
+            $subs->delete(
+                $subscriptionId,
+                $rowSubscription->sub_callback,
+                $topicUrl
+            );
+            $this->log->info(
+                'Subscriber is not subscribed anymore. Subscription removed.',
+                array(
+                    'topic'   => $topicUrl,
+                    'sub_id'  => $subscriptionId,
+                    'sub_url' => $rowSubscription->sub_callback,
+                    'pr_id'   => $pingRequestId,
+                    'job'     => $this->jobHandle,
+                )
+            );
+            return true;
+
         } else {
             $this->storeFail($pingRequestId, $rowSubscription->sub_id);
             $hasNext = $this->scheduleRePing(
