@@ -34,6 +34,7 @@ What works / Features
 - Re-pinging a subscriber when it failed (exponential back-off)
 - Logging
 - Re-connecting to DB if we had a timeout
+- Subscriber count image (``counter.php?topic=$url``)
 
 
 Dependencies

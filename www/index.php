@@ -82,6 +82,15 @@ tt {
   </p>
 
 
+  <h3 id="counter">Counter</h3>
+  <p>
+   You can show the number of feed subscribers with an image on your site.
+   The URL is <tt>counter.php?topic=$url</tt>:
+  </p>
+  <pre>&lt;img width="55" height="20" alt="Subscriber counter"
+     src="<?= htmlspecialchars($hub_url) ?>/counter.php?topic=http://example.org/feed" /></pre>
+
+
   <h2 id="phubb">phubb</h2>
   <p>
    <a href="http://cweiske.de/phubb.htm">phubb</a> is a PubSubHubbub server
