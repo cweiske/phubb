@@ -88,7 +88,7 @@ tt {
    The URL is <tt>counter.php?topic=$url</tt>:
   </p>
   <pre>&lt;img width="55" height="20" alt="Subscriber counter"
-     src="<?= htmlspecialchars($hub_url) ?>/counter.php?topic=http://example.org/feed" /></pre>
+     src="<?= htmlspecialchars($hub_url) ?>counter.php?topic=http://example.org/feed" /></pre>
 
 
   <h2 id="phubb">phubb</h2>
