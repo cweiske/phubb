@@ -87,7 +87,14 @@ class Task_Verify extends Task_Base
             . '&hub.lease_seconds=' . urlencode($req->leaseSeconds);
         //echo $url . "\n";
 
-        $ctx = stream_context_create(['http' => ['ignore_errors' => true]]);
+        $ctx = stream_context_create(
+            [
+                'http' => [
+                    'ignore_errors' => true,
+                    'timeout'       => 10,//this is also a connect timeout
+                ]
+            ]
+        );
         $res = file_get_contents($url, false, $ctx);
         if ($res === false && !isset($http_response_header)) {
             $this->failSubscription(
