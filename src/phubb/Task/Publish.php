@@ -321,8 +321,8 @@ class Task_Publish extends Task_Base
             //FIXME: fetch URL and check if self matches
             $this->db->prepare(
                 'INSERT INTO topics'
-                . '(t_url, t_change_date, t_content_md5)'
-                . ' VALUES(:url, "1970-01-01 00:00:00", "")'
+                . '(t_url, t_updated, t_change_date, t_content_md5, t_etag)'
+                . ' VALUES(:url, NOW(), "1970-01-01 00:00:00", "", "")'
             )->execute(array(':url' => $url));
 
             $stmt = $this->db->prepare('SELECT * FROM topics WHERE t_url = :url');
@@ -336,12 +336,13 @@ class Task_Publish extends Task_Base
     {
         $arHeaders = $this->parseHeaders($headers);
 
-        $lastChangeDate = '';
+        $lastChangeDate = gmdate('Y-m-d H:i:s');
         if (isset($arHeaders['last-modified'])) {
             $lastChangeDate = gmdate(
                 'Y-m-d H:i:s', strtotime($arHeaders['last-modified'])
             );
         }
+
         $etag = '';
         if (isset($arHeaders['etag'])) {
             $etag = trim($arHeaders['etag'], '"');

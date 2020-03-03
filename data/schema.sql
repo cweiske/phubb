@@ -27,10 +27,10 @@ CREATE TABLE `pingrequests` (
   `pr_created` datetime NOT NULL,
   `pr_updated` datetime NOT NULL,
   `pr_url` varchar(8192) NOT NULL,
-  `pr_subscribers` int(11) NOT NULL,
-  `pr_ping_ok` int(11) NOT NULL,
-  `pr_ping_reping` int(11) NOT NULL,
-  `pr_ping_error` int(11) NOT NULL,
+  `pr_subscribers` int(11) NOT NULL DEFAULT '0',
+  `pr_ping_ok` int(11) NOT NULL DEFAULT '0',
+  `pr_ping_reping` int(11) NOT NULL DEFAULT '0',
+  `pr_ping_error` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`pr_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -72,8 +72,8 @@ CREATE TABLE `subscriptions` (
   `sub_lease_seconds` int(11) NOT NULL,
   `sub_lease_end` datetime NOT NULL,
   `sub_secret` varchar(512) NOT NULL,
-  `sub_ping_ok` int(11) NOT NULL,
-  `sub_ping_error` int(11) NOT NULL,
+  `sub_ping_ok` int(11) NOT NULL DEFAULT '0',
+  `sub_ping_error` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`sub_id`),
   UNIQUE KEY `req_id` (`sub_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Subscription requests';
@@ -90,7 +90,7 @@ CREATE TABLE `topics` (
   `t_id` int(11) NOT NULL AUTO_INCREMENT,
   `t_updated` datetime NOT NULL,
   `t_url` varchar(8192) NOT NULL,
-  `t_subscriber` int(11) NOT NULL,
+  `t_subscriber` int(11) NOT NULL DEFAULT '0',
   `t_change_date` datetime NOT NULL,
   `t_content_md5` varchar(32) NOT NULL,
   `t_etag` varchar(32) NOT NULL,

@@ -88,6 +88,13 @@ class Task_Verify extends Task_Base
         //echo $url . "\n";
 
         $res = file_get_contents($url);
+        if ($res === false && !isset($http_response_header)) {
+            $this->failSubscription(
+                'verification request failed',
+                $req
+            );
+            return false;
+        }
         list(, $status, ) = explode(' ', $http_response_header[0]);
         if ($status != 200) {
             //subscription error
