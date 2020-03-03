@@ -1,17 +1,19 @@
-*******************************
-phubb - PHP PubSubHubbub server
-*******************************
+*************************
+phubb - PHP WebSub server
+*************************
 
-A PubSubHubbub__ server written in PHP, ready to be run on your own server.
+A WebSub__ server written in PHP, ready to be run on your own server.
 
 Use it to instantly notify subscribers about updates on your blog's feed,
 your website's HTML pages or any other HTTP-accessible resources.
 
 Work in progress. Basic functionality is working.
 
+WebSub was formerly called PubSubHubbub.
+
 Implements PubSubHubbub 0.4.
 
-__ https://github.com/pubsubhubbub/PubSubHubbub/
+__ https://www.w3.org/TR/websub/
 
 .. contents::
 
@@ -120,6 +122,7 @@ Notify subscriber::
 
 References
 ==========
+* https://www.w3.org/TR/websub/
 * https://pubsubhubbub.googlecode.com/git/pubsubhubbub-core-0.4.html
 
 
