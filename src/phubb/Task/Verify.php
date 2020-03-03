@@ -87,7 +87,8 @@ class Task_Verify extends Task_Base
             . '&hub.lease_seconds=' . urlencode($req->leaseSeconds);
         //echo $url . "\n";
 
-        $res = file_get_contents($url);
+        $ctx = stream_context_create(['http' => ['ignore_errors' => true]]);
+        $res = file_get_contents($url, false, $ctx);
         if ($res === false && !isset($http_response_header)) {
             $this->failSubscription(
                 'verification request failed',
