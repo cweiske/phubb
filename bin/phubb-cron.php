@@ -1,10 +1,18 @@
 #!/usr/bin/env php
 <?php
 namespace phubb;
+/**
+ * Tasks that need to be run regularly
+ *
+ * - re-ping subscribers if they failed to receive an update the last time
+ * - delete outdated subscriptions
+ */
 require_once __DIR__ . '/../src/phubb/functions.php';
 $log = new Logger();
 $db = new Db($log);
 $jobHandle = uniqid('phubb-cron-');
+
+deleteOutdatedSubscriptions($db);
 
 $nRePings = scheduleRePings($db);
 //FIXME: --quiet parameter
@@ -12,6 +20,13 @@ if ($nRePings > 0) {
     $log->notice($nRePings . ' re-pings', array('job' => $jobHandle));
 } else {
     $log->debug($nRePings . ' re-pings', array('job' => $jobHandle));
+}
+
+
+
+function deleteOutdatedSubscriptions($db)
+{
+    $db->query('DELETE FROM subscriptions WHERE sub_lease_end < NOW()');
 }
 
 function scheduleRePings($db)
