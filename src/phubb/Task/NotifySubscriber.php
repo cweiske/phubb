@@ -146,6 +146,8 @@ class Task_NotifySubscriber extends Task_Base
                     'job' => $this->jobHandle,
                 )
             );
+            $this->log->debug('Failed response', ['body' => $res]);
+
             return false;
         }
     }

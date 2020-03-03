@@ -212,8 +212,11 @@ class Task_Publish extends Task_Base
 
         $hasType = false;
         $hasLength = false;
-        foreach ($this->parseHeaders($headers) as $name => $value) {
-            if (isset($allowedHeaders[$name])) {
+        foreach ($this->parseHeaders($headers) as $name => $values) {
+            if (!isset($allowedHeaders[$name])) {
+                continue;
+            }
+            foreach ($values as $value) {
                 $headersToSend[] = $name . ': ' . $value;
                 if ($name == 'content-length') {
                     $hasLength = true;
@@ -234,6 +237,15 @@ class Task_Publish extends Task_Base
         return $headersToSend;
     }
 
+    /**
+     * Parse an array of header lines
+     *
+     * @param array $arHeaderLines "Foo: bar\nBaz: Bat\n..."
+     *
+     * @return array Key is the lowercased header name.
+     *               Value is an array of values, because
+     *               headers may appear multiple times
+     */
     protected function parseHeaders($arHeaderLines)
     {
         if (substr($arHeaderLines[0], 0, 5) == 'HTTP/') {
@@ -245,7 +257,7 @@ class Task_Publish extends Task_Base
         foreach ($arHeaderLines as $header) {
             list($name, $value) = explode(':', $header, 2);
             $name = strtolower($name);
-            $arHeaders[$name] = trim($value);
+            $arHeaders[$name][] = trim($value);
         }
         return $arHeaders;
     }
@@ -337,15 +349,15 @@ class Task_Publish extends Task_Base
         $arHeaders = $this->parseHeaders($headers);
 
         $lastChangeDate = gmdate('Y-m-d H:i:s');
-        if (isset($arHeaders['last-modified'])) {
+        if (isset($arHeaders['last-modified'][0])) {
             $lastChangeDate = gmdate(
-                'Y-m-d H:i:s', strtotime($arHeaders['last-modified'])
+                'Y-m-d H:i:s', strtotime($arHeaders['last-modified'][0])
             );
         }
 
         $etag = '';
-        if (isset($arHeaders['etag'])) {
-            $etag = trim($arHeaders['etag'], '"');
+        if (isset($arHeaders['etag'][0])) {
+            $etag = trim($arHeaders['etag'][0], '"');
         }
 
         $this->db->prepare(
