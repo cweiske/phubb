@@ -300,6 +300,8 @@ class Task_Publish extends Task_Base
         $ctx = stream_context_create(
             array(
                 'http' => array(
+                    'ignore_errors' => true,
+                    'timeout'       => 10,//this is also a connect timeout
                     'header' => $header
                 )
             )
