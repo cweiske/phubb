@@ -6,7 +6,7 @@ $hubphp_url = $hub_url . 'hub.php';
 ?>
 <html xmlns="http://www.w3.org/1999/xhtml">
  <head>
-  <title>phubb - PHP PubSubHubbub server</title>
+  <title>phubb - PHP WebSub server</title>
   <style type="text/css">
 body {
     max-width: 80ex;
@@ -26,11 +26,11 @@ tt {
   </style>
  </head>
  <body>
-  <h1>phubb - PHP PubSubHubbub server</h1>
+  <h1>phubb - PHP WebSub server</h1>
   <p>
    This is a
-   <a href="https://pubsubhubbub.googlecode.com/git/pubsubhubbub-core-0.4.html">PubSubHubbub</a>
-   0.4 server.
+   <a href="https://www.w3.org/TR/websub/">WebSub</a>
+   server.
    You can use it to instantly notify feed subscribers about updates.
   </p>
 
@@ -93,7 +93,7 @@ tt {
 
   <h2 id="phubb">phubb</h2>
   <p>
-   <a href="http://cweiske.de/phubb.htm">phubb</a> is a PubSubHubbub server
+   <a href="http://cweiske.de/phubb.htm">phubb</a> is a WebSub server
    written by
    <a href="http://cweiske.de/">Christian Weiske</a>
    and licensed under the

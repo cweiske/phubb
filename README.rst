@@ -11,8 +11,6 @@ Work in progress. Basic functionality is working.
 
 WebSub was formerly called PubSubHubbub.
 
-Implements PubSubHubbub 0.4.
-
 __ https://www.w3.org/TR/websub/
 
 .. contents::
