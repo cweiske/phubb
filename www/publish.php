@@ -20,6 +20,7 @@ $ctx = stream_context_create(
         'http' => array(
             'method' => 'POST',
             'header' => array(
+                'User-Agent: phubb/bot',
                 'Content-type: application/x-www-form-urlencoded',
             ),
             'content' => $postMsg,

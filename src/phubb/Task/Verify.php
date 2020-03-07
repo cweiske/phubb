@@ -90,6 +90,9 @@ class Task_Verify extends Task_Base
         $ctx = stream_context_create(
             [
                 'http' => [
+                    'header' => [
+                        'User-Agent: phubb/bot',
+                    ],
                     'ignore_errors' => true,
                     'timeout'       => 10,//this is also a connect timeout
                 ]

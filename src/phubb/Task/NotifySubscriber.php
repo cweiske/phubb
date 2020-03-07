@@ -66,6 +66,7 @@ class Task_NotifySubscriber extends Task_Base
                 . hash_hmac('sha1', $content, $rowSubscription->sub_secret);
         }
 
+        $headers[] = 'User-Agent: phubb/bot';
         $ctx = stream_context_create(
             array(
                 'http' => array(

@@ -289,7 +289,9 @@ class Task_Publish extends Task_Base
      */
     function fetchTopic($rowTopic)
     {
-        $header = array();
+        $header = [
+            'User-Agent: phubb/bot',
+        ];
         if (strtotime($rowTopic->t_change_date) != 0) {
             $header[] = 'If-Modified-Since: '
                 . date('r', strtotime($rowTopic->t_change_date));
