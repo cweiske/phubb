@@ -3,14 +3,15 @@ namespace phubb;
 require_once __DIR__ . '/autoloader.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
 
+function getHubIndex()
+{
+    require __DIR__ . '/../../data/phubb.config.php';
+    return $baseUrl;
+}
+
 function getHubUrl()
 {
-    if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']) {
-        $prot = 'https';
-    } else {
-        $prot = 'http';
-    }
-    return $prot . '://' . $_SERVER['HTTP_HOST'] . '/';
+    return getHubIndex() . 'hub.php';
 }
 
 function isValidUrl($url)

@@ -1,8 +1,8 @@
 <?php
 namespace phubb;
 require_once __DIR__ . '/../src/phubb/functions.php';
-$hub_url = getHubUrl();
-$hubphp_url = $hub_url . 'hub.php';
+$hub_index = getHubIndex();
+$hub_url   = getHubUrl();
 ?>
 <html xmlns="http://www.w3.org/1999/xhtml">
  <head>
@@ -41,9 +41,9 @@ tt {
   <p>
    To notify this hub that one of your sites changed,
    send a HTTP POST request to
-   <tt><a href="<?php echo htmlspecialchars($hubphp_url); ?>"><?php echo htmlspecialchars($hubphp_url); ?></a></tt>:
+   <tt><a href="<?php echo htmlspecialchars($hub_url); ?>"><?php echo htmlspecialchars($hub_url); ?></a></tt>:
   </p>
-  <pre>$ curl -d hub.mode=publish -d "hub.url=http://blog.example.org/feed" <?php echo htmlspecialchars($hubphp_url); ?></pre>
+  <pre>$ curl -d hub.mode=publish -d "hub.url=http://blog.example.org/feed" <?php echo htmlspecialchars($hub_url); ?></pre>
   <p>
    This hub will then notify all subscribers about the update.
   </p>
@@ -70,7 +70,7 @@ tt {
   <p>
    The first is a <tt>Link</tt> header pointing to this hub:
   </p>
-  <pre>Link: &lt;<?php echo htmlspecialchars($hubphp_url); ?>&gt;; rel="hub"</pre>
+  <pre>Link: &lt;<?php echo htmlspecialchars($hub_url); ?>&gt;; rel="hub"</pre>
   <p>
    The second is a <tt>Link</tt> header containing the full URL of the site
    itself:
@@ -88,7 +88,7 @@ tt {
    The URL is <tt>counter.php?topic=$url</tt>:
   </p>
   <pre>&lt;img width="55" height="20" alt="Subscriber counter"
-     src="<?= htmlspecialchars($hub_url) ?>counter.php?topic=http://example.org/feed" /></pre>
+     src="<?= htmlspecialchars($hub_index) ?>counter.php?topic=http://example.org/feed" /></pre>
 
 
   <h2 id="phubb">phubb</h2>

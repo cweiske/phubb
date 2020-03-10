@@ -8,6 +8,9 @@ $dbPass = 'phubb';
 $logLevel = 'debug';
 $logFile = '/var/log/phubb.log';
 
+//self URL
+$baseUrl = 'http://phubb.example.org/';
+
 //list of domains not to accept
 $topicBlacklist = array();
 
