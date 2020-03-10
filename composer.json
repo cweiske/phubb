@@ -1,6 +1,9 @@
 {
     "require": {
         "monolog/monolog": "~1.13",
-        "psr/log": "~1.0"
+        "psr/log": "~1.0",
+        "pear/http2": "^1.1",
+        "pear/http_request2": "^2.3",
+        "pear/net_url2": "^2.2"
     }
 }
