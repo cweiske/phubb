@@ -20,6 +20,8 @@ class Task_Verify extends Task_Base
 
     /**
      * Used by task tester
+     *
+     * @var string $mode subscribe or unsubscribe
      */
     public function run($callback, $topic, $mode, $leaseSeconds, $secret)
     {
@@ -46,7 +48,7 @@ class Task_Verify extends Task_Base
             array_merge((array) $req, array('job' => $this->jobHandle))
         );
 
-        if (!$this->verifyTopic($req->topic)) {
+        if (!$this->verifyTopic($req)) {
             return false;
         }
         return $this->verifySubscriber($req);
@@ -56,15 +58,48 @@ class Task_Verify extends Task_Base
     /**
      * Check that the topic URL exists and that it propagates this hub.
      *
-     * @param string $topicUrl URL the subscriber wants to subscribe to
+     * @param Model_SubscriptionRequest $req Incoming request
      *
      * @return boolean True if the topic is valid, false if we cannot
      *                 find it or accept it
      */
-    protected function verifyTopic($topicUrl)
+    protected function verifyTopic(Model_SubscriptionRequest $req)
     {
-        //TODO: check if topic exists
-        //TODO: check if topic proposes this hub in the link header
+        $topicUrl = $req->topic;
+        if (!isValidTopic($topicUrl)) {
+            return false;
+        }
+
+        $stmt = $this->db->prepare('SELECT * FROM topics WHERE t_url = :url');
+        $stmt->execute(array(':url' => $topicUrl));
+        $rowTopic = $stmt->fetch();
+        if ($rowTopic !== false) {
+            //we already know about that topic, so accept it without further
+            // checks
+            return true;
+        }
+
+        $extractor = new HubUrlExtractor();
+        $urls = $extractor->getUrls($topicUrl);
+        if (count($urls) != 2) {
+            $this->failSubscription('hub or self URL missing, or 404', $req);
+            return false;
+        }
+
+        if ($topicUrl != $urls['self']) {
+            $this->failSubscription('self is different from topic', $req);
+            return false;
+        }
+
+        $me = getHubUrl();
+        if (!in_array($me, $urls['hub'])) {
+            $this->failSubscription(
+                'this phubb instance is not listed in hubs',
+                $req
+            );
+            return false;
+        }
+
         return true;
     }
 
@@ -133,13 +168,36 @@ class Task_Verify extends Task_Base
         }
     }
 
+    /**
+     * We deny a subscription request and inform the subscriber.
+     */
     function failSubscription($reason, Model_SubscriptionRequest $req)
     {
-        //TODO: send fail message to subscriber
         $data = (array) $req;
         $data['reason'] = $reason;
         $data['job']    = $this->jobHandle;
         $this->log->notice('Verification failed', $data);
+
+        //notify subscriber that we deny the subscription
+        $url = $req->callback;
+        $sep = strpos($url, '?') === false ? '?' : '&';
+        $url .= $sep . 'hub.mode=denied'
+             . '&hub.topic=' . urlencode($req->topic)
+             . '&hub.reason=' . urlencode($reason);
+
+        $ctx = stream_context_create(
+            [
+                'http' => [
+                    'header' => [
+                        'User-Agent: phubb/bot',
+                    ],
+                    'ignore_errors' => true,
+                    'timeout'       => 10,//this is also a connect timeout
+                ]
+            ]
+        );
+        file_get_contents($url, false, $ctx);
+        //we do not care about the result
     }
 
     function acceptSubscription(Model_SubscriptionRequest $req)
@@ -165,7 +223,7 @@ class Task_Verify extends Task_Base
             );
             return;
         }
-    
+
         if ($rowSub === false) {
             //new subscription
             $subs->create(
