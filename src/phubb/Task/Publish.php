@@ -287,7 +287,7 @@ class Task_Publish extends Task_Base
      *                      or TRUE if the content did not change
      *               key 1: HTTP body content
      */
-    function fetchTopic($rowTopic)
+    function fetchTopic(Model_Topic $rowTopic)
     {
         $header = [
             'User-Agent: phubb/bot',
@@ -327,10 +327,11 @@ class Task_Publish extends Task_Base
         return array($http_response_header, $content);
     }
 
-    function fetchOrCreateTopicRow($url)
+    function fetchOrCreateTopicRow(string $url): Model_Topic
     {
         $stmt = $this->db->prepare('SELECT * FROM topics WHERE t_url = :url');
         $stmt->execute(array(':url' => $url));
+        $stmt->setFetchMode(\PDO::FETCH_CLASS, 'Model_Topic', []);
         $rowTopic = $stmt->fetch();
         if ($rowTopic === false) {
             //TODO: insert
