@@ -3,7 +3,7 @@ namespace phubb;
 header('HTTP/1.0 500 Internal Server Error');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    require_once __DIR__ . '/../src/phubb/functions.php';
+    require_once __DIR__ . '/../vendor/autoload.php';
     header('Location: ' . getHubIndex());
     exit();
 } else if (!isset($_POST['hub_mode'])) {

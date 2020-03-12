@@ -1,6 +1,7 @@
 <?php
 namespace phubb;
-require_once __DIR__ . '/../src/phubb/functions.php';
+
+require_once __DIR__ . '/../vendor/autoload.php';
 $hub_index = getHubIndex();
 $hub_url   = getHubUrl();
 ?>

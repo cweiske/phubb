@@ -2,7 +2,7 @@
 namespace phubb;
 header('HTTP/1.0 500 Internal Server Error');
 
-require_once __DIR__ . '/../src/phubb/functions.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $defaultLeaseSeconds = 7 * 86400 + 3600;
 //PHP converts dots to underscore, so hub.mode becomes hub_mode

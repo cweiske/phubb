@@ -1,4 +1,10 @@
 {
+    "autoload": {
+        "files": [
+            "src/phubb/functions.php"
+        ],
+        "psr-0": { "phubb\\": "src/" }
+    },
     "require": {
         "monolog/monolog": "~1.13",
         "psr/log": "~1.0",

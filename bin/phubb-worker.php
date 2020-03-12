@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 namespace phubb;
-require_once __DIR__ . '/../src/phubb/functions.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 $log = new Logger();
 $db = new Db($log);
 

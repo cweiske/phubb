@@ -7,7 +7,7 @@ namespace phubb;
  * - re-ping subscribers if they failed to receive an update the last time
  * - delete outdated subscriptions
  */
-require_once __DIR__ . '/../src/phubb/functions.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 $log = new Logger();
 $db = new Db($log);
 $jobHandle = uniqid('phubb-cron-');

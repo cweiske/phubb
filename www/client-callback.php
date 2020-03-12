@@ -6,7 +6,7 @@
  */
 header('HTTP/1.0 500 Internal Server Error');
 
-require_once __DIR__ . '/../data/phubb.config.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 if (!$devMode) {
     header('HTTP/1.0 403 Forbidden');
     echo "devMode is disabled\n";
