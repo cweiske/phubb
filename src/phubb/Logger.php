@@ -3,6 +3,9 @@ namespace phubb;
 
 class Logger extends \Psr\Log\AbstractLogger
 {
+    /**
+     * @var \Monolog\Logger
+     */
     protected $ml;
 
     public function __construct()
@@ -21,15 +24,16 @@ class Logger extends \Psr\Log\AbstractLogger
     /**
      * Logs with an arbitrary level.
      *
-     * @param mixed $level
-     * @param string $message
-     * @param array $context
+     * @param mixed   $level
+     * @param string  $message
+     * @param mixed[] $context
      *
      * @return null
      */
     public function log($level, $message, array $context = array())
     {
         $this->ml->log($level, $message, $context);
+        return null;//just for phpstan
     }
 }
 ?>

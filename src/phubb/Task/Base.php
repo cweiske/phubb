@@ -3,8 +3,27 @@ namespace phubb;
 
 abstract class Task_Base
 {
+    /**
+     * @var Db
+     */
     protected $db;
+
+    /**
+     * @var Logger
+     */
+    protected $log;
+
+    /**
+     * @var string
+     */
     public $jobHandle;
+
+    /**
+     * HTTP request object that's used to do the requests
+     *
+     * @var \HTTP_Request2
+     */
+    protected $request;
 
     public function __construct(Db $db, Logger $log)
     {

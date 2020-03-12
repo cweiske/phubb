@@ -2,6 +2,10 @@
 namespace phubb;
 use PDO;
 
+/**
+ * @method \PDOStatement prepare(string $sql)
+ * @method string        lastInsertId()
+ */
 class Db
 {
     /**
@@ -9,6 +13,9 @@ class Db
      */
     protected $db;
 
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
     protected $log;
 
     public function __construct(\Psr\Log\LoggerInterface $log)
@@ -17,7 +24,7 @@ class Db
         $this->connect();
     }
 
-    protected function connect()
+    protected function connect(): void
     {
         $config = Config::load();
         $db = new PDO(
@@ -31,12 +38,18 @@ class Db
         $this->db = $db;
     }
 
-    public function __call($method, $args)
+    /**
+     * @param string  $method PDO method to call
+     * @param mixed[] $args
+     *
+     * @return mixed
+     */
+    public function __call(string $method, array $args)
     {
         return call_user_func_array(array($this->db, $method), $args);
     }
 
-    public function reconnect()
+    public function reconnect(): void
     {
         try {
             $this->db->query('SELECT 1')->fetchAll();

@@ -68,7 +68,7 @@ class Task_Publish extends Task_Base
      *
      * @param string $url Topic URL to send updates for
      *
-     * @return int Number of started notification jobs
+     * @return int|false Number of started notification jobs, false on error
      */
     protected function publishSingleUrl($url)
     {
@@ -114,7 +114,7 @@ class Task_Publish extends Task_Base
             . ' VALUES(NOW(), NOW(), :url)'
         )->execute(array(':url' => $url));
 
-        return $this->db->lastInsertId();
+        return (int) $this->db->lastInsertId();
     }
 
     /**
@@ -387,9 +387,9 @@ class Task_Publish extends Task_Base
      *
      * @param string $url Wildcard URL to expand
      *
-     * @return array URLs that match the pattern.
+     * @return string[] URLs that match the pattern.
      */
-    protected function expandWildcard($url)
+    protected function expandWildcard(string $url)
     {
         if ($url == '*') {
             return array();

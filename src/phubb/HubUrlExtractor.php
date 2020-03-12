@@ -149,7 +149,7 @@ class HubUrlExtractor
     /**
      * Extract hub url from the HTTP response headers.
      *
-     * @param object $res HTTP response
+     * @param \HTTP_Request2_Response $res HTTP response
      *
      * @return array Array with maximal two keys: hub and self
      */
@@ -177,8 +177,9 @@ class HubUrlExtractor
     /**
      * Load a DOMDocument from the given HTML or XML
      *
-     * @param string $sourceBody Content of $source URI
-     * @param object $res        HTTP response from fetching $source
+     * @param string                  $sourceBody Content of $source URI
+     * @param \HTTP_Request2_Response $res        HTTP response from fetching
+     *                                            $source
      *
      * @return \DOMDocument DOM document object with HTML/XML loaded
      */
@@ -212,7 +213,7 @@ class HubUrlExtractor
      * Returns the HTTP request object clone that can be used
      * for one HTTP request.
      *
-     * @return HTTP_Request2 Clone of the setRequest() object
+     * @return \HTTP_Request2 Clone of the setRequest() object
      */
     public function getRequest()
     {
@@ -229,7 +230,7 @@ class HubUrlExtractor
     /**
      * Sets a custom HTTP request object that will be used to do HTTP requests
      *
-     * @param object $request Request object
+     * @param \HTTP_Request2 $request Request object
      *
      * @return self
      */
@@ -242,10 +243,10 @@ class HubUrlExtractor
     /**
      * Make the list of urls absolute
      *
-     * @param array  $urls Array of maybe relative URLs, or array of URLs
-     * @param object $base Base URL to resolve the relatives against
+     * @param string[]  $urls Array of maybe relative URLs, or array of URLs
+     * @param \Net_URL2 $base Base URL to resolve the relatives against
      *
-     * @return array List of absolute URLs
+     * @return string[] List of absolute URLs
      */
     protected function absolutifyUrls($urls, \Net_URL2 $base)
     {

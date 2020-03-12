@@ -1,17 +1,17 @@
 <?php
 namespace phubb;
 
-function getHubIndex()
+function getHubIndex(): string
 {
     return Config::load()->baseUrl;
 }
 
-function getHubUrl()
+function getHubUrl(): string
 {
     return getHubIndex() . 'hub.php';
 }
 
-function isValidUrl($url)
+function isValidUrl(string $url): bool
 {
     if (filter_var($url, FILTER_VALIDATE_URL) === false) {
         return false;
@@ -24,7 +24,7 @@ function isValidUrl($url)
     return false;
 }
 
-function isValidTopic($url)
+function isValidTopic(string $url): bool
 {
     $topicBlacklist = Config::load()->topicBlacklist;
     if (!is_array($topicBlacklist) || !count($topicBlacklist)) {

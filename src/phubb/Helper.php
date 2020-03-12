@@ -3,7 +3,10 @@ namespace phubb;
 
 class Helper
 {
-    public static function getTmpFilePaths($id)
+    /**
+     * @return string[]
+     */
+    public static function getTmpFilePaths(int $id)
     {
         return array(
             __DIR__ . '/../../tmp/ping-' . $id . '-headers',

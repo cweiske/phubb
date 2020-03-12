@@ -6,6 +6,9 @@ namespace phubb;
  */
 class Service_Subscription
 {
+    /**
+     * @var Db
+     */
     public $db;
 
     public function __construct(Db $db)

@@ -9,19 +9,25 @@ class Task_Verify extends Task_Base
     /**
      * @param \GearmanJob $job Job to execute
      *
-     * @return FIXME
+     * @return void
      */
     public function runJob(\GearmanJob $job)
     {
         $this->log->debug('Received job', array('job' => $this->jobHandle));
         $req = unserialize($job->workload());
-        return $this->runRequest($req);
+        $this->runRequest($req);
     }
 
     /**
      * Used by task tester
      *
-     * @var string $mode subscribe or unsubscribe
+     * @param string  $callback     URL to notify about the subscription result
+     * @param string  $topic        URL to subscribe to
+     * @param string  $mode         "subscribe" or "unsubscribe"
+     * @param integer $leaseSeconds When the subscription ends
+     * @param string  $secret       Secret shared between hub and subscriber
+     *
+     * @return void
      */
     public function run($callback, $topic, $mode, $leaseSeconds, $secret)
     {
@@ -31,13 +37,13 @@ class Task_Verify extends Task_Base
         $req->mode         = $mode;
         $req->leaseSeconds = $leaseSeconds;
         $req->secret       = $secret;
-        return $this->runRequest($req);
+        $this->runRequest($req);
     }
 
     /**
      * Check if there is an update and start jobs to notify subscribers
      *
-     * @param string $url Topic URL that was updated
+     * @param Model_SubscriptionRequest $req subscription request
      *
      * @return boolean True if all went well, false if not
      */
@@ -118,8 +124,8 @@ class Task_Verify extends Task_Base
         $sep = strpos($url, '?') === false ? '?' : '&';
         $url .= $sep . 'hub.mode=' . urlencode($req->mode)
             . '&hub.topic=' . urlencode($req->topic)
-            . '&hub.challenge=' . urlencode($challenge)
-            . '&hub.lease_seconds=' . urlencode($req->leaseSeconds);
+            . '&hub.challenge=' . $challenge
+            . '&hub.lease_seconds=' . $req->leaseSeconds;
         //echo $url . "\n";
 
         $ctx = stream_context_create(
@@ -170,6 +176,11 @@ class Task_Verify extends Task_Base
 
     /**
      * We deny a subscription request and inform the subscriber.
+     *
+     * @param string                    $reason Failure reason / Error message
+     * @param Model_SubscriptionRequest $req    Subscription data
+     *
+     * @return void
      */
     function failSubscription($reason, Model_SubscriptionRequest $req)
     {
@@ -200,6 +211,9 @@ class Task_Verify extends Task_Base
         //we do not care about the result
     }
 
+    /**
+     * @return void
+     */
     function acceptSubscription(Model_SubscriptionRequest $req)
     {
         $stmt = $this->db->prepare(

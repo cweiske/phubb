@@ -15,8 +15,9 @@ class Task_NotifySubscriber extends Task_Base
     {
         $this->log->debug('Received job', array('job' => $this->jobHandle));
         $data = unserialize($job->workload());
-        extract($data);
-        return $this->run($topicUrl, $subscriptionId, $pingRequestId);
+        return $this->run(
+            $data['topicUrl'], $data['subscriptionId'], $data['pingRequestId']
+        );
     }
 
     /**
@@ -24,7 +25,7 @@ class Task_NotifySubscriber extends Task_Base
      *
      * @param string  $topicUrl       Topic URL that was updated
      * @param integer $subscriptionId ID of subscription in database
-     * @param string  $pingRequestId  Unique ID for files with header and content
+     * @param integer $pingRequestId  Unique ID for files with header and content
      *                                data
      *
      * @return boolean True when the notification has been sent, false otherwise
@@ -153,7 +154,7 @@ class Task_NotifySubscriber extends Task_Base
         }
     }
 
-    protected function storeSuccess($pingRequestId, $subscriptionId)
+    protected function storeSuccess(int $pingRequestId, int $subscriptionId): void
     {
         $this->db->prepare(
             'UPDATE pingrequests'
@@ -181,7 +182,7 @@ class Task_NotifySubscriber extends Task_Base
         }
     }
 
-    protected function storeFail($pingRequestId, $subscriptionId)
+    protected function storeFail(int $pingRequestId, int $subscriptionId): void
     {
         $this->db->prepare(
             'UPDATE subscriptions'
@@ -191,7 +192,7 @@ class Task_NotifySubscriber extends Task_Base
         )->execute(array(':id' => $subscriptionId));
     }
 
-    protected function checkRequestCleanup($pingRequestId)
+    protected function checkRequestCleanup(int $pingRequestId): void
     {
         //FIXME: this should not be done after every ping
         //we should use a real scheduler here.
@@ -207,7 +208,10 @@ class Task_NotifySubscriber extends Task_Base
 
         $gmclient= new \GearmanClient();
         $gmclient->addServer('127.0.0.1');
-        $gmclient->doBackground('phubb_cleanup_pingrequest', $pingRequestId);
+        $gmclient->doBackground(
+            'phubb_cleanup_pingrequest',
+            (string) $pingRequestId
+        );
     }
 
     /**
@@ -216,8 +220,9 @@ class Task_NotifySubscriber extends Task_Base
      * @return boolean True if it was scheduled, false if
      *                 it expired (too many repings) and needs to be deleted
      */
-    protected function scheduleRePing($pingRequestId, $subscriptionId, $error)
-    {
+    protected function scheduleRePing(
+        int $pingRequestId, int $subscriptionId, string $error
+    ) {
         $rowRePing = $this->getRePing($pingRequestId, $subscriptionId);
         if ($rowRePing === false) {
             //no, it's new
@@ -276,7 +281,7 @@ class Task_NotifySubscriber extends Task_Base
     /**
      * Cancel repinging because we had too many failures.
      */
-    protected function cancelRePing($pingRequestId, $subscriptionId)
+    protected function cancelRePing(int $pingRequestId, int $subscriptionId): void
     {
         $this->deleteRePing($pingRequestId, $subscriptionId);
         //tell that we stopped repinging
@@ -292,7 +297,7 @@ class Task_NotifySubscriber extends Task_Base
     /**
      * Simply delete a reping request from DB
      */
-    protected function deleteRePing($pingRequestId, $subscriptionId)
+    protected function deleteRePing(int $pingRequestId, int $subscriptionId): void
     {
         $this->db->prepare(
             'DELETE FROM repings'
@@ -308,9 +313,9 @@ class Task_NotifySubscriber extends Task_Base
     /**
      * Load the reping request from DB.
      *
-     * @return object Row object, boolean false if it does not exist
+     * @return object|false Row object, boolean false if it does not exist
      */
-    protected function getRePing($pingRequestId, $subscriptionId)
+    protected function getRePing(int $pingRequestId, int $subscriptionId)
     {
         //check if we already have it
         $stmt = $this->db->prepare(
@@ -323,7 +328,11 @@ class Task_NotifySubscriber extends Task_Base
         return $stmt->fetch();
     }
 
-    protected function getNextTryTime($iteration, $lastTime = null)
+    /**
+     * @return string|false Next date (Y-m-d H:i:s) or false if we should not
+     *                      try anymore
+     */
+    protected function getNextTryTime(int $iteration, int $lastTime = null)
     {
         if ($lastTime === null) {
             $lastTime = time();
