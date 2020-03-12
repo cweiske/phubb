@@ -1,4 +1,5 @@
 <?php
+namespace phubb;
 /**
  * Test script that can be used as a subscriber callback URL
  *
@@ -7,7 +8,8 @@
 header('HTTP/1.0 500 Internal Server Error');
 
 require_once __DIR__ . '/../vendor/autoload.php';
-if (!$devMode) {
+$config = Config::load();
+if (!$config->devMode) {
     header('HTTP/1.0 403 Forbidden');
     echo "devMode is disabled\n";
     exit(0);

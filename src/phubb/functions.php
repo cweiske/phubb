@@ -3,8 +3,7 @@ namespace phubb;
 
 function getHubIndex()
 {
-    require __DIR__ . '/../../data/phubb.config.php';
-    return $baseUrl;
+    return Config::load()->baseUrl;
 }
 
 function getHubUrl()
@@ -27,7 +26,7 @@ function isValidUrl($url)
 
 function isValidTopic($url)
 {
-    require __DIR__ . '/../../data/phubb.config.php';
+    $topicBlacklist = Config::load()->topicBlacklist;
     if (!is_array($topicBlacklist) || !count($topicBlacklist)) {
         return true;
     }
