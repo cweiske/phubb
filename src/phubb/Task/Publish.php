@@ -138,9 +138,10 @@ class Task_Publish extends Task_Base
      * Initiate the worker jobs that notify the subscribers about
      * the topic update
      *
-     * @param string $url     Topic URL
-     * @param array  $headers Array of HTTP headers from fetching the URL
-     * @param string $content Content of URL to publish
+     * @param string   $url     Topic URL
+     * @param string[] $headers Key-value array of HTTP headers from fetching
+     *                          the URL
+     * @param string   $content Content of URL to publish
      *
      * @return integer Number of worker jobs that have been created
      *                 (Thus the number of subscribers)
@@ -155,7 +156,7 @@ class Task_Publish extends Task_Base
         file_put_contents($fileHeaders, serialize($headers));
         file_put_contents($fileContent, $content);
 
-        $gmclient= new \GearmanClient();
+        $gmclient = new \GearmanClient();
         $gmclient->addServer('127.0.0.1');
 
         $stmt = $this->db->prepare(
@@ -192,13 +193,13 @@ class Task_Publish extends Task_Base
     /**
      * Filter an array with HTTP headers so that it can be sent to a subscriber.
      *
-     * @param array $headers Array of HTTP header strings
+     * @param string[] $headers Key-value array of HTTP headers
      *
-     * @return array Filtered array of HTTP headers
+     * @return string[] Filtered key-value array of HTTP headers
      */
-    protected function filterHeaders($headers, $contentLength)
+    protected function filterHeaders($headers, int $contentLength)
     {
-        $headersToSend  = array();
+        $headersToSend  = [];
         $allowedHeaders = array_flip(
             array(
                 'content-length',
@@ -212,57 +213,36 @@ class Task_Publish extends Task_Base
 
         $hasType = false;
         $hasLength = false;
-        foreach ($this->parseHeaders($headers) as $name => $values) {
+        foreach ($headers as $name => $value) {
             if (!isset($allowedHeaders[$name])) {
                 continue;
             }
-            foreach ($values as $value) {
-                $headersToSend[] = $name . ': ' . $value;
-                if ($name == 'content-length') {
-                    $hasLength = true;
-                } else if ($name == 'content-type') {
-                    $hasType = true;
-                }
+            $headersToSend[$name] = $value;
+            if ($name == 'content-length') {
+                $hasLength = true;
+            } else if ($name == 'content-type') {
+                $hasType = true;
             }
         }
 
         if (!$hasType) {
             //we do not know it
-            $headersToSend[] = 'content-type: application/octet-stream';
+            $headersToSend['content-type'] = 'application/octet-stream';
         }
         if (!$hasLength) {
-            $headersToSend[] = 'content-length: ' . $contentLength;
+            $headersToSend['content-length'] = $contentLength;
         }
 
         return $headersToSend;
     }
 
     /**
-     * Parse an array of header lines
-     *
-     * @param array $arHeaderLines "Foo: bar\nBaz: Bat\n..."
-     *
-     * @return array Key is the lowercased header name.
-     *               Value is an array of values, because
-     *               headers may appear multiple times
+     * @return array Array with 3 values:
+     *                  - topicRow
+     *                  - key-value array of headers
+     *                  - body
      */
-    protected function parseHeaders($arHeaderLines)
-    {
-        if (substr($arHeaderLines[0], 0, 5) == 'HTTP/') {
-            //drop "HTTP/1.0 ..."
-            array_shift($arHeaderLines);
-        }
-
-        $arHeaders = array();
-        foreach ($arHeaderLines as $header) {
-            list($name, $value) = explode(':', $header, 2);
-            $name = strtolower($name);
-            $arHeaders[$name][] = trim($value);
-        }
-        return $arHeaders;
-    }
-
-    function checkTopicUpdate($url)
+    function checkTopicUpdate(string $url)
     {
         $rowTopic = $this->fetchOrCreateTopicRow($url);
         list($headers, $content) = $this->fetchTopic($rowTopic);
@@ -282,60 +262,51 @@ class Task_Publish extends Task_Base
     /**
      * Fetch a topic URL
      *
-     * @return array key 0: HTTP response header array
+     * @return array key 0: HTTP response header key-value array
      *                      or FALSE if an error occured
      *                      or TRUE if the content did not change
      *               key 1: HTTP body content
      */
     function fetchTopic(Model_Topic $rowTopic)
     {
-        $header = [
-            'User-Agent: phubb/bot',
-        ];
+        $req = $this->getRequest($rowTopic->t_url);
         if (strtotime($rowTopic->t_change_date) != 0) {
-            $header[] = 'If-Modified-Since: '
-                . date('r', strtotime($rowTopic->t_change_date));
+            $req->setHeader(
+                'If-Modified-Since',
+                date('r', strtotime($rowTopic->t_change_date))
+            );
         }
         if ($rowTopic->t_etag != '') {
-            $header[] = 'If-None-Match: "' . $rowTopic->t_etag . '"';
+            $req->setHeader('If-None-Match', $rowTopic->t_etag);
         }
-        $ctx = stream_context_create(
-            array(
-                'http' => array(
-                    'ignore_errors' => true,
-                    'timeout'       => 10,//this is also a connect timeout
-                    'header' => $header
-                )
-            )
-        );
 
-        $content = file_get_contents($rowTopic->t_url, false, $ctx);
-        list($http, $code, $rest) = explode(' ', $http_response_header[0]);
-        if ($code == 304) {
+        $res = $req->send();
+        if ($res->getStatus() == 304) {
             //304 Not Modified
             return array(true, true);
-        } else if (intval($code / 100) !== 2) {
+        } else if (intval($res->getStatus() / 100) !== 2) {
             return array(false, false);
         }
 
+        $content = $res->getBody();
         $contentHash = md5($content);
         if ($contentHash == $rowTopic->t_content_md5) {
             //content did not change
             return array(true, true);
         }
 
-        return array($http_response_header, $content);
+        return array($res->getHeader(), $content);
     }
 
     function fetchOrCreateTopicRow(string $url): Model_Topic
     {
         $stmt = $this->db->prepare('SELECT * FROM topics WHERE t_url = :url');
         $stmt->execute(array(':url' => $url));
-        $stmt->setFetchMode(\PDO::FETCH_CLASS, 'Model_Topic', []);
+        $stmt->setFetchMode(\PDO::FETCH_CLASS, Model_Topic::class, []);
         $rowTopic = $stmt->fetch();
         if ($rowTopic === false) {
             //TODO: insert
-            //FIXME: fetch URL and check if self matches
+            //FIXME: fetch URL and check if self+hub match
             $this->db->prepare(
                 'INSERT INTO topics'
                 . '(t_url, t_updated, t_change_date, t_content_md5, t_etag)'
@@ -344,25 +315,30 @@ class Task_Publish extends Task_Base
 
             $stmt = $this->db->prepare('SELECT * FROM topics WHERE t_url = :url');
             $stmt->execute(array(':url' => $url));
+            $stmt->setFetchMode(\PDO::FETCH_CLASS, Model_Topic::class, []);
             $rowTopic = $stmt->fetch();
+            var_dump($rowTopic);
         }
         return $rowTopic;
     }
 
-    protected function updateTopicStatus($topicId, $headers, $content)
+    /**
+     * @param int      $topicId Database ID
+     * @param string[] $headers Key-value array of HTTP headers
+     * @param string   $content Body
+     */
+    protected function updateTopicStatus($topicId, $headers, $content): void
     {
-        $arHeaders = $this->parseHeaders($headers);
-
         $lastChangeDate = gmdate('Y-m-d H:i:s');
-        if (isset($arHeaders['last-modified'][0])) {
+        if (isset($headers['last-modified'])) {
             $lastChangeDate = gmdate(
-                'Y-m-d H:i:s', strtotime($arHeaders['last-modified'][0])
+                'Y-m-d H:i:s', strtotime($headers['last-modified'])
             );
         }
 
         $etag = '';
-        if (isset($arHeaders['etag'][0])) {
-            $etag = trim($arHeaders['etag'][0], '"');
+        if (isset($headers['etag'])) {
+            $etag = trim($headers['etag'], '"');
         }
 
         $this->db->prepare(

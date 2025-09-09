@@ -128,50 +128,35 @@ class Task_Verify extends Task_Base
             . '&hub.lease_seconds=' . $req->leaseSeconds;
         //echo $url . "\n";
 
-        $ctx = stream_context_create(
-            [
-                'http' => [
-                    'header' => [
-                        'User-Agent: phubb/bot',
-                    ],
-                    'ignore_errors' => true,
-                    'timeout'       => 10,//this is also a connect timeout
-                ]
-            ]
-        );
-        $res = file_get_contents($url, false, $ctx);
-        if ($res === false && !isset($http_response_header)) {
+        $httpReq = $this->getRequest($url);
+        $res = $httpReq->send();
+        if ($res->getStatus() != 200) {
+            //subscription error
             $this->failSubscription(
-                'verification request failed',
+                'verification response status not 200 but ' . $res->getStatus(),
                 $req
             );
             return false;
         }
-        list(, $status, ) = explode(' ', $http_response_header[0]);
-        if ($status != 200) {
-            //subscription error
-            $this->failSubscription(
-                'verification response status not 200 but ' . (int) $status,
-                $req
-            );
-            return false;
-        } else if ($res != $challenge) {
+
+        $body = $res->getBody();
+        if ($body != $challenge) {
             //challenge does not match
             $this->failSubscription(
                 'verification response does not match challenge but is '
-                . gettype($res) . '(' . strlen($res) . '): '
-                . '"' . str_replace("\n", '\\n', substr($res, 0, 128)) . '"',
+                . gettype($body) . '(' . strlen($body) . '): '
+                . '"' . str_replace("\n", '\\n', substr($body, 0, 128)) . '"',
                 $req
             );
             return false;
-        } else {
-            //subscription validated
-            $this->acceptSubscription($req);
-            $this->log->info(
-                'Subscription accepted', array('job' => $this->jobHandle)
-            );
-            return true;
         }
+
+        //subscription validated
+        $this->acceptSubscription($req);
+        $this->log->info(
+            'Subscription accepted', array('job' => $this->jobHandle)
+        );
+        return true;
     }
 
     /**
@@ -196,18 +181,8 @@ class Task_Verify extends Task_Base
              . '&hub.topic=' . urlencode($req->topic)
              . '&hub.reason=' . urlencode($reason);
 
-        $ctx = stream_context_create(
-            [
-                'http' => [
-                    'header' => [
-                        'User-Agent: phubb/bot',
-                    ],
-                    'ignore_errors' => true,
-                    'timeout'       => 10,//this is also a connect timeout
-                ]
-            ]
-        );
-        file_get_contents($url, false, $ctx);
+        $req = $this->getRequest($url);
+        $req->send();
         //we do not care about the result
     }
 

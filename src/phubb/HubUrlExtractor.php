@@ -11,9 +11,9 @@ class HubUrlExtractor
     /**
      * HTTP request object that's used to do the requests
      *
-     * @var \HTTP_Request2
+     * @var \Psr\Http\Client\ClientInterface
      */
-    protected $request;
+    protected $client;
 
     /**
      * Get the hub and self/canonical URL of a given topic URL.

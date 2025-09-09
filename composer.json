@@ -10,7 +10,8 @@
         "psr/log": "~1.0",
         "pear/http2": "^1.1",
         "pear/http_request2": "^2.3",
-        "pear/net_url2": "^2.2"
+        "pear/net_url2": "^2.2",
+        "php-http/socket-client": "^2.0.0-beta1"
     },
     "require-dev": {
         "phpstan/phpstan": "^0.12.14"

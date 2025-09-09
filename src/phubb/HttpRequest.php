@@ -15,5 +15,12 @@ class HttpRequest extends \HTTP_Request2
         $this->setConfig('timeout', 10);
         $this->setHeader('user-agent', 'phubb/bot');
     }
+
+    public function send()
+    {
+        echo "SEND: " . $this->method . ' ' . (string) $this->url . "\n";
+        return parent::send();
+    }
+
 }
 ?>

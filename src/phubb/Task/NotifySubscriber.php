@@ -63,25 +63,18 @@ class Task_NotifySubscriber extends Task_Base
         $content = file_get_contents($fileContent);
 
         if ($rowSubscription->sub_secret != '') {
-            $headers[] = 'X-Hub-Signature: sha1='
+            $headers['X-Hub-Signature'] = 'sha1='
                 . hash_hmac('sha1', $content, $rowSubscription->sub_secret);
         }
 
-        $headers[] = 'User-Agent: phubb/bot';
-        $ctx = stream_context_create(
-            array(
-                'http' => array(
-                    'method'  => 'POST',
-                    'header'  => $headers,
-                    'content' => $content,
-                    'ignore_errors' => true,
-                )
-            )
-        );
+        $req = $this->getRequest($rowSubscription->sub_callback, 'POST');
+        foreach ($headers as $headerName => $headerValue) {
+            $req->setHeader($headerName, $headerValue);
+        }
+        $req->setBody($content);
 
-        $res = file_get_contents($rowSubscription->sub_callback, false, $ctx);
-        list($http, $code, $rest) = explode(' ', $http_response_header[0]);
-        if (intval($code / 100) === 2) {
+        $res = $req->send();
+        if (intval($res->getStatus() / 100) === 2) {
             $this->storeSuccess($pingRequestId, $rowSubscription->sub_id);
             $this->checkRequestCleanup($pingRequestId);
             $this->log->info(
@@ -96,7 +89,7 @@ class Task_NotifySubscriber extends Task_Base
             );
             return true;
 
-        } else if ($code == 410) {
+        } else if ($res->getStatus() == 410) {
             //410 Gone - subscriber is not subscribed anymore
             // and somehow we did not get the unsubscription request
             $this->cancelRePing($pingRequestId, $subscriptionId);
@@ -121,7 +114,8 @@ class Task_NotifySubscriber extends Task_Base
         } else {
             $this->storeFail($pingRequestId, $rowSubscription->sub_id);
             $hasNext = $this->scheduleRePing(
-                $pingRequestId, $rowSubscription->sub_id, $http_response_header[0]
+                $pingRequestId, $rowSubscription->sub_id,
+                $res->getStatus() . ' ' . $res->getReasonPhrase()
             );
             if (!$hasNext) {
                 $this->cancelRePing($pingRequestId, $rowSubscription->sub_id);
