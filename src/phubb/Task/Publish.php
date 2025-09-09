@@ -72,6 +72,10 @@ class Task_Publish extends Task_Base
      */
     protected function publishSingleUrl($url)
     {
+        if (!isValidTopic($url)) {
+            return false;
+        }
+
         $this->nRequestId = $this->storeRequest($url);
 
         list($rowTopic, $headers, $content) = $this->checkTopicUpdate($url);
