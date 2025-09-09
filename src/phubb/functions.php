@@ -28,12 +28,21 @@ function isValidUrl($url)
 
 function isValidTopic($url)
 {
+    $host = parse_url($url, PHP_URL_HOST);
+
     require __DIR__ . '/../../data/phubb.config.php';
+
+    if (is_array($topicWhitelist) && count($topicWhitelist)) {
+        if (array_search($host, $topicWhitelist) !== false) {
+            return true;
+        }
+        return false;
+    }
+
     if (!is_array($topicBlacklist) || !count($topicBlacklist)) {
         return true;
     }
 
-    $host = parse_url($url, PHP_URL_HOST);
     if (array_search($host, $topicBlacklist) !== false) {
         return false;
     }

@@ -11,6 +11,9 @@ $logFile = '/var/log/phubb.log';
 //list of domains not to accept
 $topicBlacklist = array();
 
+//list of domains to accept. overrides blacklist when at least 1 entry
+$topicWhitelist = [];
+
 //enable development test scripts
 $devMode = false;
 ?>
